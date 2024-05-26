@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+import numpy as np
+from scipy.stats import gaussian_kde
 
 st.set_page_config(layout="wide")
 
@@ -46,6 +48,21 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("----")
+
+st.markdown("""
+    ### **Sobre essa Página**
+    <style>
+        .custom-font {
+            font-size: 20px;
+        }
+    </style>
+    <div class='custom-font'>
+        Esta pagina tem como objetivo apresentar uma análise exploratória dos dados de acidentes em rodovias federais, com base nos dados fornecidos pela Polícia Rodoviária Federal (PRF). O conjunto de dados abrange o período de 2020 a 2023 e contém informações detalhadas sobre acidentes, incluindo localização, condições meteorológicas, tipos de veículos envolvidos e número de vítimas.
+        A barras laterais permitem a seleção de filtros para personalizar a visualização dos dados, incluindo região, estado, município, tipo de veículo, condições meteorológicas e fase do dia. Além disso, são apresentados gráficos interativos, que podem utilizar zoom e tela cheia para uma análise mais detalhada.       
+    </div>
+    """, unsafe_allow_html=True)
+st.markdown("----")
+
 st.sidebar.markdown("# Filtros - 1")
 
 
@@ -155,7 +172,11 @@ square_style = """
     width: fit-content;
     margin: auto;
 """
-
+st.markdown("""
+            <div style="text-align: center;">
+                <h2>Dados Gerais</h2>
+            </div>
+            """, unsafe_allow_html=True)
 st.markdown(f'<div style="{square_style}"> \
              <div style="display: inline-block; text-align: center; height: 100%; vertical-align: top;"> \
              <div style="border: 3.5px solid #1E90FF; border-radius: 15px; padding: 15px; background-color: #175bba; height: 100%;"> \
@@ -213,7 +234,7 @@ fig1 = px.bar(result_df1, x='Ano', y='Total_acidentes_por_ano',
              labels={'Total_acidentes_por_ano': '', 'Ano': 'Ano'},
              title='Acidentes por Ano')
 
-fig1.update_traces(marker_color='#120078')
+fig1.update_traces(marker_color='#5c8dad')
 
 fig1.update_layout( 
     title={'x': 0.4,'font': {'size': 30}},
@@ -230,6 +251,16 @@ fig1.update_layout(
 
 fig1.update_xaxes(type='category')
 
+fig1.add_trace(
+    go.Scatter(
+        x=["2020", "2023"],
+        y=[result_df1[result_df1['Ano'] == '2020']['Total_acidentes_por_ano'].values[0],
+           result_df1[result_df1['Ano'] == '2023']['Total_acidentes_por_ano'].values[0]],
+        mode='lines',
+        line=dict(color='Red', width=4, dash='dashdot'),  # Increase the width value to increase the line width
+        name='Tendência'
+    )
+)
 #  --------------------- Gráfico dos meses -------------------------------
 # Dados do segundo gráfico
 consulta2 = """
@@ -255,8 +286,10 @@ fig2 = px.line(result_df2, x='Mes', y='Numero_de_Acidentes', color='Ano',
                title='Acidentes por Mês nos Últimos Três Anos',
                color_discrete_sequence=['#f6ff00','#ffbb00', '#f04000', '#a10005'])
 
-fig2.update_traces(line_width=3)
+# Atualizar o traço do primeiro ano (exemplo)
+fig2.data[0].update(line=dict(dash='longdashdot'))  # Trocar 'dash' por qualquer outro estilo de linha desejado
 
+# Atualizar o layout da figura
 fig2.update_layout(
     title={'x': 0.1, 'font': {'size': 30}}, 
     xaxis_title='', 
@@ -276,7 +309,8 @@ fig2.update_layout(
         font=dict(size=20),
         traceorder="normal",
         itemsizing='constant'
-    ))
+    )
+)
 # ------
 
 
@@ -324,6 +358,16 @@ fig3.update_layout(
     uirevision='Traces'
 )
 
+fig3.add_trace(
+    go.Scatter(
+        x=result_df3['Dia_Semana'],
+        y=result_df3['Numero_de_Acidentes'],
+        mode='lines+markers',  # Inclui linhas e marcadores para os pontos
+        line=dict(color='Red', width=2.5, dash='solid'),
+        name='Tendência'
+    )
+)
+
 consulta4 = """
     SELECT
         uso_solo AS Urbano_Rural,
@@ -339,7 +383,8 @@ fig4 = go.Figure(data=[go.Pie(labels=result_df4['Urbano_Rural'], values=result_d
 
 cores = {'Rural': '#65b34b', 'Urbano': '#004ea1'}
 
-fig4.update_traces(marker=dict(colors=[cores[x] for x in result_df4['Urbano_Rural']]), textfont=dict(size=20))
+fig4.update_traces(marker=dict(colors=[cores[x] for x in result_df4['Urbano_Rural']]), textfont=dict(size=20), textinfo='percent+label')
+fig4.update_layout(legend=dict(font=dict(size=20)))
 
 fig4.update_layout(title='Zonas Urbanas ou Rural',
                    title_font_size=30, 
