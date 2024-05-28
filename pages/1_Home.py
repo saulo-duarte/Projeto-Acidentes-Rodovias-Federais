@@ -4,7 +4,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 import numpy as np
-from scipy.stats import gaussian_kde
 
 st.set_page_config(layout="wide")
 
@@ -253,11 +252,10 @@ fig1.update_xaxes(type='category')
 
 fig1.add_trace(
     go.Scatter(
-        x=["2020", "2023"],
-        y=[result_df1[result_df1['Ano'] == '2020']['Total_acidentes_por_ano'].values[0],
-           result_df1[result_df1['Ano'] == '2023']['Total_acidentes_por_ano'].values[0]],
-        mode='lines',
-        line=dict(color='Red', width=4, dash='dashdot'),  # Increase the width value to increase the line width
+        x=result_df1['Ano'],
+        y=result_df1['Total_acidentes_por_ano'],
+        mode='lines+markers',  # Inclui linhas e marcadores para os pontos
+        line=dict(color='Red', width=2.5, dash='solid'),
         name='Tendência'
     )
 )
