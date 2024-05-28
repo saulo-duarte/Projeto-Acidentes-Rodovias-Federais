@@ -282,12 +282,12 @@ result_df2 = result_df2.sort_values(by=['Ano', 'Mes_Numero'])
 fig2 = px.line(result_df2, x='Mes', y='Numero_de_Acidentes', color='Ano',
                labels={'Numero_de_Acidentes': '', 'Mes': 'Mês', 'Ano': 'Ano'},
                title='Acidentes por Mês nos Últimos Três Anos',
-               color_discrete_sequence=['#f6ff00','#ffbb00', '#f04000', '#a10005'])
+               color_discrete_sequence=['#ad9e26','#36353d', '#63a8ab', '#db091a'])
 
-# Atualizar o traço do primeiro ano (exemplo)
-fig2.data[0].update(line=dict(dash='longdashdot'))  # Trocar 'dash' por qualquer outro estilo de linha desejado
+fig2.update_traces(line=dict(width=3.5, shape='spline'))
 
-# Atualizar o layout da figura
+fig2.data[3].update(line=dict(dash='longdash'))
+
 fig2.update_layout(
     title={'x': 0.1, 'font': {'size': 30}}, 
     xaxis_title='', 
@@ -342,7 +342,7 @@ fig3 = px.bar(result_df3, x='Dia_Semana', y='Numero_de_Acidentes',
              labels={'Numero_de_Acidentes': '', 'Dia_semana': 'Dia da Semana'},
              title='Acidentes Por Dia da Semana')
 
-fig3.update_traces(marker_color='#120078')
+fig3.update_traces(marker_color='#5c8dad')
 
 fig3.update_layout(
     title={'x': 0.1,'font': {'size': 30}},
@@ -383,6 +383,16 @@ cores = {'Rural': '#65b34b', 'Urbano': '#004ea1'}
 
 fig4.update_traces(marker=dict(colors=[cores[x] for x in result_df4['Urbano_Rural']]), textfont=dict(size=20), textinfo='percent+label')
 fig4.update_layout(legend=dict(font=dict(size=20)))
+fig4.update_layout(
+    legend=dict(
+        orientation="h",  
+        x=0.31,            
+        y=0,            
+        font=dict(size=20)
+
+    )
+)
+
 
 fig4.update_layout(title='Zonas Urbanas ou Rural',
                    title_font_size=30, 
