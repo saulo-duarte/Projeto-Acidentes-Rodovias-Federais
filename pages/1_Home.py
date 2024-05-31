@@ -360,7 +360,7 @@ fig3.add_trace(
     go.Scatter(
         x=result_df3['Dia_Semana'],
         y=result_df3['Numero_de_Acidentes'],
-        mode='lines+markers',  # Inclui linhas e marcadores para os pontos
+        mode='lines+markers',
         line=dict(color='Red', width=2.5, dash='solid'),
         name='Tendência'
     )
@@ -491,7 +491,7 @@ result_df5 = result5.fetch_df()
 
 fig5 = px.bar(result_df5, x="Total_Acidentes", y="Regiao", orientation='h')
 
-fig5.update_traces(marker_color='#d65200')
+fig5.update_traces(marker_color='#5e77b5')
 fig5.update_layout(
     title='Regiões',
     xaxis_title='',
@@ -519,7 +519,7 @@ result_df6 = result6.fetch_df()
 
 fig6 = px.bar(result_df6, x="Total_Acidentes", y="Estado", orientation='h')
 
-fig6.update_traces(marker_color='#d65200')
+fig6.update_traces(marker_color='#5e77b5')
 fig6.update_layout(
     title='Estados',
     xaxis_title='',
@@ -548,7 +548,7 @@ result_df7 = result7.fetch_df().sort_values(by='Total_Acidentes')
 
 fig7 = px.bar(result_df7, x="Total_Acidentes", y="Municipio", orientation='h')
 
-fig7.update_traces(marker_color='#d65200')
+fig7.update_traces(marker_color='#5e77b5')
 fig7.update_layout(
     title='TOP 10 Municipios',
     xaxis_title='',
@@ -584,7 +584,7 @@ result_df8 = result8.fetch_df().sort_values(by='Total_Acidentes')
 
 fig8 = px.bar(result_df8, x="Total_Acidentes", y="BR", orientation='h')
 
-fig8.update_traces(marker_color='#0b005e')
+fig8.update_traces(marker_color='#5e77b5')
 fig8.update_layout(
     title='TOP 10 BR',
     xaxis_title='',
@@ -615,9 +615,8 @@ result_df9 = result9.fetch_df()
 
 fig9 = go.Figure(data=[go.Pie(labels=result_df9['Sexo'], values=result_df9['Total_Acidentes'])])
 cores = {'Masculino': '#0085de', 'Feminino': '#ff2bdc', 'Ignorado': '#afabcf'}
-fig9.update_traces(marker=dict(colors=[cores[x] for x in result_df9['Sexo']]), textfont=dict(size=16))
-
-
+fig9.update_traces(marker=dict(colors=[cores[x] for x in result_df9['Sexo']]), textfont=dict(size=20), textinfo='percent+label')
+fig9.update_layout(legend=dict(font=dict(size=20)))
 fig9.update_layout(title='Sexo',
                    title_font_size=30, 
                    title_x=0.35,
@@ -625,7 +624,12 @@ fig9.update_layout(title='Sexo',
                    width=400,
                    margin=dict(l=0, r=20, t=50, b=50),
                    uirevision='Traces',
-                  ) 
+                   legend=dict(
+                   orientation="h",  
+                   x=0.17,            
+                   y=0,            
+                  font=dict(size=20)
+                  ))
 
 #--------------
 consulta10 = """
@@ -642,7 +646,7 @@ result_df10 = result10.fetch_df().sort_values(by='Total_Acidentes')
 
 fig10 = px.bar(result_df10, x="Total_Acidentes", y="horario", orientation='h')
 
-fig10.update_traces(marker_color='#0b005e')
+fig10.update_traces(marker_color='#5e77b5')
 fig10.update_layout(
     title='Horários',
     xaxis_title='',
@@ -680,7 +684,7 @@ result_df11['Causa_Acidente'] = result_df11['Causa_Acidente'].str.slice(0, 45)
 
 fig11 = px.bar(result_df11, x="Total_Acidentes", y="Causa_Acidente", orientation='h')
 
-fig11.update_traces(marker_color='#c75600')
+fig11.update_traces(marker_color='#3d35b5')
 fig11.update_layout(
     title='TOP 10 Acidentes',
     xaxis_title='',
@@ -708,7 +712,7 @@ result_df12 = result12.fetch_df().sort_values(by='Total_Acidentes')
 
 fig12 = px.bar(result_df12, x="Total_Acidentes", y="Tipo_Acidente", orientation='h')
 
-fig12.update_traces(marker_color='#c75600')
+fig12.update_traces(marker_color='#3d35b5')
 fig12.update_layout(
     title='TOP 10 Acidentes',
     xaxis_title='',
