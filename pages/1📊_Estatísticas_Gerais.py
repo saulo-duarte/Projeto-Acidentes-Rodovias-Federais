@@ -221,10 +221,10 @@ fig1 = px.bar(result_df1, x='Ano', y='Total_acidentes_por_ano',
              labels={'Total_acidentes_por_ano': '', 'Ano': 'Ano'},
              title='Acidentes por Ano')
 
-fig1.update_traces(marker_color='#5c8dad')
+fig1.update_traces(marker_color='#5e77b5')
 
 fig1.update_layout( 
-    title={'x': 0.4,'font': {'size': 30}},
+    title={'x': 0.2,'font': {'size': 30}},
     xaxis_title='Ano',
     xaxis_tickangle=-45,
     width= 400, 
@@ -242,9 +242,9 @@ fig1.add_trace(
     go.Scatter(
         x=result_df1['Ano'],
         y=result_df1['Total_acidentes_por_ano'],
-        mode='lines+markers',
-        line=dict(color='Red', width=2.5, dash='solid'),
-        name='Tendência'
+        mode='lines',
+        line=dict(color='Red', width=2.5, dash='solid', shape='spline'),
+        showlegend=False
     )
 )
 #  --------------------- Gráfico dos meses -------------------------------
@@ -330,7 +330,8 @@ fig3 = px.bar(result_df3, x='Dia_Semana', y='Numero_de_Acidentes',
              labels={'Numero_de_Acidentes': '', 'Dia_semana': 'Dia da Semana'},
              title='Acidentes Por Dia da Semana')
 
-fig3.update_traces(marker_color='#5c8dad')
+cor_fim_de_semana = '#244470'
+fig3.data[0].marker.color = [cor_fim_de_semana if dia == 'Sábado' or dia == 'Domingo' else '#5e77b5' for dia in result_df3['Dia_Semana']]
 
 fig3.update_layout(
     title={'x': 0.1,'font': {'size': 30}},
@@ -350,7 +351,7 @@ fig3.add_trace(
         y=result_df3['Numero_de_Acidentes'],
         mode='lines+markers',
         line=dict(color='Red', width=2.5, dash='solid'),
-        name='Tendência'
+        showlegend=False
     )
 )
 
@@ -367,9 +368,9 @@ result_df4 = result4.fetch_df()
 fig4 = go.Figure(data=[go.Pie(labels=result_df4['Urbano_Rural'], values=result_df4['Total_Acidentes'])])
 
 
-cores = {'Rural': '#65b34b', 'Urbano': '#004ea1'}
+cores = {'Rural': '#578755', 'Urbano': '#32346b'}
 
-fig4.update_traces(marker=dict(colors=[cores[x] for x in result_df4['Urbano_Rural']]), textfont=dict(size=20), textinfo='percent+label')
+fig4.update_traces(marker=dict(colors=[cores[x] for x in result_df4['Urbano_Rural']]), textfont=dict(size=20), textinfo='percent')
 fig4.update_layout(legend=dict(font=dict(size=20)))
 fig4.update_layout(
     legend=dict(
@@ -602,8 +603,8 @@ result_df9 = result9.fetch_df()
 
 
 fig9 = go.Figure(data=[go.Pie(labels=result_df9['Sexo'], values=result_df9['Total_Acidentes'])])
-cores = {'Masculino': '#0085de', 'Feminino': '#ff2bdc', 'Ignorado': '#afabcf'}
-fig9.update_traces(marker=dict(colors=[cores[x] for x in result_df9['Sexo']]), textfont=dict(size=20), textinfo='percent+label')
+cores = {'Masculino': '#5e62d1', 'Feminino': '#e86bd7', 'Ignorado': '#afabcf'}
+fig9.update_traces(marker=dict(colors=[cores[x] for x in result_df9['Sexo']]), textfont=dict(size=20), textinfo='percent')
 fig9.update_layout(legend=dict(font=dict(size=20)))
 fig9.update_layout(title='Sexo',
                    title_font_size=30, 
@@ -614,7 +615,7 @@ fig9.update_layout(title='Sexo',
                    uirevision='Traces',
                    legend=dict(
                    orientation="h",  
-                   x=0.17,            
+                   x=0.1,            
                    y=0,            
                   font=dict(size=20)
                   ))
@@ -672,7 +673,10 @@ result_df11['Causa_Acidente'] = result_df11['Causa_Acidente'].str.slice(0, 45)
 
 fig11 = px.bar(result_df11, x="Total_Acidentes", y="Causa_Acidente", orientation='h')
 
-fig11.update_traces(marker_color='#3d35b5')
+acidentes_destaques = ["Velocidade Incompatível", "Condutor Dormindo", "Ingestão de Álcool", "Ultrapassagem Indevida"]
+cor_acidente_destaques = '#1a3654'
+fig11.data[0].marker.color = [cor_acidente_destaques if causa in acidentes_destaques else '#5e77b5' for causa in result_df11['Causa_Acidente']]
+
 fig11.update_layout(
     title='TOP 10 Acidentes',
     xaxis_title='',
@@ -700,7 +704,7 @@ result_df12 = result12.fetch_df().sort_values(by='Total_Acidentes')
 
 fig12 = px.bar(result_df12, x="Total_Acidentes", y="Tipo_Acidente", orientation='h')
 
-fig12.update_traces(marker_color='#3d35b5')
+fig12.update_traces(marker_color='#5e77b5')
 fig12.update_layout(
     title='TOP 10 Acidentes',
     xaxis_title='',

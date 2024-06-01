@@ -148,6 +148,10 @@ st.markdown(f'<div style="{square_style}"> \
              <h2 style="color:white; margin: 5px 0; font-size: 28px"><strong>{mortos_por_dia}</strong></h2> \
              </div> \
              </div> \
+             <div style="display: inline-block; text-align: center; vertical-align: top;"> \
+             <div style="border: 3.5px solid #FF1493; border-radius: 15px; padding: 15px; background-color: #DC143C;"> \
+             <h3 style="color:yellow; font-family: Segoe UI Semibold; font-size: 25px;"><strong>Taxa de Mortalidade</strong></h3> \
+             <h2 style="color:white; margin: 5px 0; font-size: 28px"><strong>5%</strong></h2> \
              </div>', unsafe_allow_html=True)
 
 # -------------- Gráficos
@@ -171,7 +175,7 @@ fig1 = px.bar(result_df1, x='Ano', y='Total_acidentes_por_ano',
              labels={'Total_acidentes_por_ano': '', 'Ano': 'Ano'},
              title='Óbitos por Ano')
 
-fig1.update_traces(marker_color='#a10202')
+fig1.update_traces(marker_color='#ba4a63')
 
 fig1.update_layout( 
     title={'x': 0.4,'font': {'size': 30}},
@@ -266,7 +270,9 @@ fig3 = px.bar(result_df3, x='Dia_Semana', y='Numero_de_Acidentes',
              labels={'Numero_de_Acidentes': '', 'Dia_semana': 'Dia da Semana'},
              title='Acidentes Por Dia da Semana')
 
-fig3.update_traces(marker_color='#a10202')
+cor_fim_de_semana = '#82142c'
+
+fig3.data[0].marker.color = [cor_fim_de_semana if dia == 'Sábado' or dia == 'Domingo' else '#ba4a63' for dia in result_df3['Dia_Semana']]
 
 fig3.update_layout(
     title={'x': 0.1,'font': {'size': 30}},
@@ -278,6 +284,16 @@ fig3.update_layout(
     yaxis=dict(tickfont=dict(size=15)),
     margin=dict(l=0, r=0, t=50, b=50),
     uirevision='Traces'
+)
+
+fig3.add_trace(
+    go.Scatter(
+        x=result_df3['Dia_Semana'],
+        y=result_df3['Numero_de_Acidentes'],
+        mode='lines',
+        line=dict(color='#011e47', width=2.5, shape='spline'),
+        showlegend=False
+)
 )
 
 consulta4 = """
@@ -294,7 +310,7 @@ result_df4 = result4.fetch_df()
 fig4 = go.Figure(data=[go.Pie(labels=result_df4['Urbano_Rural'], values=result_df4['Total_Acidentes'])])
 
 
-cores = {'Rural': '#65b34b', 'Urbano': '#004ea1'}
+cores = {'Rural': '#578755', 'Urbano': '#32346b'}
 
 fig4.update_traces(marker=dict(colors=[cores[x] for x in result_df4['Urbano_Rural']]), textfont=dict(size=20))
 
