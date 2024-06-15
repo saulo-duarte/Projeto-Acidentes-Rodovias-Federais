@@ -192,6 +192,15 @@ fig1.update_layout(
 
 fig1.update_xaxes(type='category')
 
+fig1.add_trace(
+    go.Scatter( 
+        x=result_df1['Ano'],
+        y=result_df1['Total_acidentes_por_ano'],
+        mode='lines',
+        line=dict(color='#011e47', width=2.5, shape='spline'),
+        showlegend=False
+    )
+)
 #  --------------------- Gráfico dos meses -------------------------------
 # Dados do segundo gráfico
 consulta2 = """
@@ -314,13 +323,21 @@ cores = {'Rural': '#578755', 'Urbano': '#32346b'}
 
 fig4.update_traces(marker=dict(colors=[cores[x] for x in result_df4['Urbano_Rural']]), textfont=dict(size=20))
 
-fig4.update_layout(title='Zonas Urbanas ou Rural',
-                   title_font_size=30, 
-                   title_x=0.15,
-                   height=350, 
-                   width=400,
-                   margin=dict(l=0, r=0, t=50, b=50),
-                   uirevision='Traces')
+fig4.update_layout(
+    title='Zonas Urbanas ou Rural',
+    title_font_size=30, 
+    title_x=0.15,
+    height=350, 
+    width=400,
+    margin=dict(l=0, r=0, t=50, b=50),
+    uirevision='Traces',
+    legend=dict(
+        orientation="h",  
+        x=0.31,            
+        y=0,            
+    font=dict(size=20)
+    )
+)
 
 
 col1, col2, col3 = st.columns(3)
@@ -409,7 +426,7 @@ result_df5 = result5.fetch_df()
 
 fig5 = px.bar(result_df5, x="Total_Acidentes", y="Regiao", orientation='h')
 
-fig5.update_traces(marker_color='#db7900')
+fig5.update_traces(marker_color='#ba4a63')
 fig5.update_layout(
     title='Regiões',
     xaxis_title='',
@@ -438,7 +455,7 @@ result_df6 = result6.fetch_df()
 
 fig6 = px.bar(result_df6, x="Total_Acidentes", y="Estado", orientation='h')
 
-fig6.update_traces(marker_color='#db7900')
+fig6.update_traces(marker_color='#ba4a63')
 fig6.update_layout(
     title='Estados',
     xaxis_title='',
@@ -468,7 +485,7 @@ result_df7 = result7.fetch_df().sort_values(by='Total_Acidentes')
 
 fig7 = px.bar(result_df7, x="Total_Acidentes", y="Municipio", orientation='h')
 
-fig7.update_traces(marker_color='#db7900')
+fig7.update_traces(marker_color='#ba4a63')
 fig7.update_layout(
     title='TOP 10 Municipios',
     xaxis_title='',
@@ -505,7 +522,7 @@ result_df8 = result8.fetch_df().sort_values(by='Total_Acidentes')
 
 fig8 = px.bar(result_df8, x="Total_Acidentes", y="BR", orientation='h')
 
-fig8.update_traces(marker_color='#6e0000')
+fig8.update_traces(marker_color='#ba4a63')
 fig8.update_layout(
     title='TOP 10 BR',
     xaxis_title='',
@@ -536,9 +553,9 @@ result_df9 = result9.fetch_df()
 
 
 fig9 = go.Figure(data=[go.Pie(labels=result_df9['sexo'], values=result_df9['Total_Acidentes'])])
-cores = {'Masculino': '#0085de', 'Feminino': '#ff2bdc', 'Ignorado': '#afabcf'}
-fig9.update_traces(marker=dict(colors=[cores[x] for x in result_df9['sexo']]), textfont=dict(size=16))
 
+cores = {'Masculino': '#5e62d1', 'Feminino': '#e86bd7', 'Ignorado': '#afabcf'}
+fig9.update_traces(marker=dict(colors=[cores[x] for x in result_df9['sexo']]), textfont=dict(size=20), textinfo='percent')
 
 fig9.update_layout(title='sexo',
                    title_font_size=30, 
@@ -564,7 +581,7 @@ result_df10 = result10.fetch_df().sort_values(by='Total_Acidentes')
 
 fig10 = px.bar(result_df10, x="Total_Acidentes", y="horario", orientation='h')
 
-fig10.update_traces(marker_color='#6e0000')
+fig10.update_traces(marker_color='#ba4a63')
 fig10.update_layout(
     title='Horários',
     xaxis_title='',
@@ -603,7 +620,7 @@ result_df11['Causa_Acidente'] = result_df11['Causa_Acidente'].str.slice(0, 46)
 
 fig11 = px.bar(result_df11, x="Total_Acidentes", y="Causa_Acidente", orientation='h')
 
-fig11.update_traces(marker_color='#130161')
+fig11.update_traces(marker_color='#ba4a63')
 fig11.update_layout(
     title='TOP 10 Causas Acidentes',
     xaxis_title='',
@@ -632,7 +649,7 @@ result_df12 = result12.fetch_df().sort_values(by='Total_Acidentes')
 
 fig12 = px.bar(result_df12, x="Total_Acidentes", y="Tipo_Acidente", orientation='h')
 
-fig12.update_traces(marker_color='#130161')
+fig12.update_traces(marker_color='#ba4a63')
 fig12.update_layout(
     title='TOP 10 Acidentes',
     xaxis_title='',

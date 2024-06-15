@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 import numpy as np
+import geopandas as gpd
 
 st.set_page_config(layout="wide")
 
@@ -467,6 +468,27 @@ if dt_veiculo_selecionado:
 
 # --------------------------
 
+geojson = gpd.read_file("brazil_geo.json")
+
+accidents_per_state = df_filtrado2.groupby('uf').size().reset_index(name='num_accidents')
+
+# Realizar o merge dos dados de acidentes com o GeoDataFrame
+merged_data = geojson.merge(accidents_per_state, how='left', left_on='id', right_on='uf')
+
+mapabr = px.choropleth(
+    merged_data,
+    geojson=merged_data.set_geometry('geometry'),
+    locations=merged_data.index,
+    color='num_accidents',
+    color_continuous_scale='Darkmint',
+    labels={'num_accidents': 'Número de Acidentes'},
+    hover_name='name',
+    hover_data={'num_accidents': True},
+)
+
+mapabr.update_geos(fitbounds='locations', visible=False, projection_type='orthographic')
+
+
 consulta5 = """
     SELECT 
         regiao AS Regiao,
@@ -550,14 +572,13 @@ fig7.update_layout(
     yaxis=dict(tickfont=dict(size=14)),
     margin=dict(l=0, r=0, t=50, b=50)
 )
-col6, col7, col9 = st.columns(3)
+col6, col7 = st.columns(2)
 
 with col6:
-    st.plotly_chart(fig5, use_container_width=True)
+    st.plotly_chart(mapabr, use_container_width=True)
 with col7:
-    st.plotly_chart(fig6, use_container_width=True)
-with col9:
-     st.plotly_chart(fig7, use_container_width=True)
+    st.plotly_chart(fig5, use_container_width=True)
+
 
 consulta8 =""" 
     SELECT
@@ -648,14 +669,13 @@ fig10.update_layout(
     yaxis=dict(tickfont=dict(size=14)),
     margin=dict(l=0, r=0, t=50, b=50)
 )
-col10,col11, col12 = st.columns(3)
+col8,col9 = st.columns(2)
 
-with col10:
-    st.plotly_chart(fig8, use_container_width=True)
-with col11:
-    st.plotly_chart(fig9, use_container_width=True)
-with col12:
-    st.plotly_chart(fig10,use_container_width=True)
+with col8:
+    st.plotly_chart(fig6, use_container_width=True)
+with col9:
+    st.plotly_chart(fig7, use_container_width=True)
+
 
 consulta11 =""" 
     SELECT
@@ -718,9 +738,15 @@ fig12.update_layout(
     margin=dict(l=0, r=0, t=50, b=50)
 )
 
-col13, col14 = st.columns(2)
 
-with col13:
-    st.plotly_chart(fig11, use_container_width=True)
+st.plotly_chart(fig8, use_container_width=True)
+
+st.plotly_chart(fig9, use_container_width=True)
+
+st.plotly_chart(fig10, use_container_width=True)
+
+col14, col15 = st.columns(2)
 with col14:
+    st.plotly_chart(fig11, use_container_width=True)
+with col15:
     st.plotly_chart(fig12, use_container_width=True)
