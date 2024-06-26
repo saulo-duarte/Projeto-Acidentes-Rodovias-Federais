@@ -5,26 +5,31 @@ import plotly.graph_objects as go
 import streamlit as st
 import numpy as np
 import geopandas as gpd
+from sqlalchemy import create_engine
 
 st.set_page_config(layout="wide")
 
 @st.cache_data
-def carregar_dados():
-    df1 = pd.read_csv("Dados_prf_simplificado_parte1.txt", low_memory=False)
-    df2 = pd.read_csv("Dados_prf_simplificado_parte2.txt", low_memory=False)
-    df = pd.concat([df1, df2], ignore_index=True)
-    return df
+def load_data():
+    DB_USER = 'postgres'
+    DB_PASSWORD = 'saulo07'
+    DB_HOST = 'localhost'
+    DB_PORT = '5432'
+    DB_NAME = 'projeto_acidentes_rodovias'  
 
-def carregar_dados2():
-    df1 = pd.read_csv("Dados_sexo_parte1.txt", low_memory=False)
-    df2 = pd.read_csv("Dados_sexo_parte2.txt", low_memory=False)
-    df = pd.concat([df1, df2], ignore_index=True)
-    return df
+    connection_str = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    engine = create_engine(connection_str)
 
-df = carregar_dados()
+    query_acidentes = """
+    SELECT * FROM relational.acidentes
+    INNER JOIN relational.envolvidos
+    ON acidentes.id = envolvidos.id_acidente;
+    """
 
-df_sexo = carregar_dados2()
+    df_acidentes = pd.read_sql(query_acidentes, con=engine)
+    return df_acidentes
 
+df = load_data()
 
 st.markdown("""
     <style>
@@ -63,7 +68,7 @@ st.sidebar.markdown("# Filtros - 1")
 #Filtragem
 # Definir o botão de limpar filtros
 
-estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["uf"].unique())
+estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["estado"].unique())
 
 regiao_selecionada = st.sidebar.multiselect("Selecione as regiões", df["regiao"].unique())
 
@@ -81,20 +86,20 @@ municipio_selecionado = []
 
 
 if regiao_selecionada:
-    estados_regiao_selecionada = df[df["regiao"].isin(regiao_selecionada)]["uf"].unique()
+    estados_regiao_selecionada = df[df["regiao"].isin(regiao_selecionada)]["estado"].unique()
     estado_selecionado.extend(estados_regiao_selecionada)
     estado_selecionado = list(set(estado_selecionado))
 
-    municipios_disponiveis = df[df["uf"].isin(estado_selecionado)]["municipio"].unique()
+    municipios_disponiveis = df[df["estado"].isin(estado_selecionado)]["municipio"].unique()
     municipio_selecionado = st.sidebar.multiselect("Selecione o(s) Município(s)", municipios_disponiveis)
 
 
 if estado_selecionado and not regiao_selecionada: 
-    municipios_disponiveis = df[df["uf"].isin(estado_selecionado)]["municipio"].unique()
+    municipios_disponiveis = df[df["estado"].isin(estado_selecionado)]["municipio"].unique()
     municipio_selecionado = st.sidebar.multiselect("Selecione o(s) Município(s)", municipios_disponiveis)
 
 if estado_selecionado:
-    df_filtrado = df_filtrado[df_filtrado["uf"].isin(estado_selecionado)]
+    df_filtrado = df_filtrado[df_filtrado["estado"].isin(estado_selecionado)]
 
 if municipio_selecionado:
     df_filtrado = df_filtrado[df_filtrado["municipio"].isin(municipio_selecionado)]
@@ -208,7 +213,7 @@ st.markdown("----")
 
 consulta1 = """
    SELECT 
-    STRFTIME('%Y', CAST(data_inversa AS DATE)) AS Ano,
+    STRFTIME('%Y', CAST(data_completa AS DATE)) AS Ano,
     COUNT(DISTINCT id) AS Total_acidentes_por_ano
 FROM df_filtrado
 GROUP BY Ano;
@@ -252,8 +257,8 @@ fig1.add_trace(
 # Dados do segundo gráfico
 consulta2 = """
    SELECT 
-    STRFTIME('%m', CAST(data_inversa AS DATE)) AS Mes_Numero,
-    STRFTIME('%Y', CAST(data_inversa AS DATE)) AS Ano,
+    STRFTIME('%m', CAST(data_completa AS DATE)) AS Mes_Numero,
+    STRFTIME('%Y', CAST(data_completa AS DATE)) AS Ano,
     COUNT(DISTINCT id) AS Numero_de_Acidentes
    FROM df_filtrado
    GROUP BY Mes_Numero, Ano;
@@ -306,8 +311,8 @@ fig2.update_layout(
 # Dados do segundo gráfico
 consulta3 = """
    SELECT 
-    STRFTIME('%w', CAST(data_inversa AS DATE)) AS Dia_Semana_Numero,
-    CASE STRFTIME('%w', CAST(data_inversa AS DATE))
+    STRFTIME('%w', CAST(data_completa AS DATE)) AS Dia_Semana_Numero,
+    CASE STRFTIME('%w', CAST(data_completa AS DATE))
         WHEN '0' THEN 'Domingo'
         WHEN '1' THEN 'Segunda'
         WHEN '2' THEN 'Terça'
@@ -410,9 +415,9 @@ st.markdown("-------")
 # ---------------------------------------------
 
 
-df['data_inversa'] = pd.to_datetime(df['data_inversa'])
-endDate = pd.to_datetime(df['data_inversa']).max()
-startDate = pd.to_datetime(df['data_inversa']).min()
+df['data_completa'] = pd.to_datetime(df['data_completa'])
+endDate = pd.to_datetime(df['data_completa']).max()
+startDate = pd.to_datetime(df['data_completa']).min()
 
 col5, col6 = st.columns(2)
 with col5:
@@ -423,7 +428,7 @@ with col6:
 
 df_filtrado2 = df.copy()
 
-df_filtrado2 = df.loc[(df['data_inversa'] >= pd.Timestamp(date1)) & (df['data_inversa'] <= pd.Timestamp(date2))]
+df_filtrado2 = df.loc[(df['data_completa'] >= pd.Timestamp(date1)) & (df['data_completa'] <= pd.Timestamp(date2))]
 
 
 
@@ -433,47 +438,47 @@ st.sidebar.title("Filtros - 2")
 
 
 dt_regiao_selecionada = st.sidebar.multiselect("Selecione as regiões", df["regiao"].unique(), key="regiao")
-dt_estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["uf"].unique(), key="uf")
+dt_estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["estado"].unique(), key="estado")
 dt_veiculo_selecionado = st.sidebar.multiselect("Selecione os tipos de veículos", df['tipo_veiculo'].unique(), key='veiculo')
 dt_condicao_tempo_selecionado = st.sidebar.multiselect("Selecione a condição meteorológica", df["condicao_metereologica"].unique(), key='tempo')
 dt_fase_dia_selecionado = st.sidebar.multiselect("Selecione a fase do dia", df["fase_dia"].unique(), key='fase_dia')
 
 if dt_regiao_selecionada:
-    dt_estado_selecionado.extend(df[df["regiao"].isin(dt_regiao_selecionada)]["uf"].unique())
-    df_sexo = df_sexo[df_sexo['regiao'].isin(dt_regiao_selecionada)]
+    dt_estado_selecionado.extend(df[df["regiao"].isin(dt_regiao_selecionada)]["estado"].unique())
+    df = df[df['regiao'].isin(dt_regiao_selecionada)]
 
 if dt_estado_selecionado:
-    dt_municipios_disponiveis = df[df["uf"].isin(dt_estado_selecionado)]["municipio"].unique()
+    dt_municipios_disponiveis = df[df["estado"].isin(dt_estado_selecionado)]["municipio"].unique()
     dt_municipio_selecionado = st.sidebar.multiselect("Selecione o(s) Município(s)", dt_municipios_disponiveis)
 
     if dt_municipio_selecionado:
         df_filtrado2 = df_filtrado2[df_filtrado2["municipio"].isin(dt_municipio_selecionado)]
-        df_sexo = df_sexo[df_sexo["municipio"].isin(dt_municipio_selecionado)]
+        df = df[df["municipio"].isin(dt_municipio_selecionado)]
 
 if dt_estado_selecionado:
-    df_filtrado2 = df_filtrado2[df_filtrado2["uf"].isin(dt_estado_selecionado)]
-    df_sexo = df_sexo[df_sexo['uf'].isin(dt_estado_selecionado)]
+    df_filtrado2 = df_filtrado2[df_filtrado2["estado"].isin(dt_estado_selecionado)]
+    df = df[df['estado'].isin(dt_estado_selecionado)]
 
 if dt_condicao_tempo_selecionado:
     df_filtrado2 = df_filtrado2[df_filtrado2["condicao_metereologica"].isin(dt_condicao_tempo_selecionado)]
-    df_sexo = df_sexo[df_sexo["condicao_metereologica"].isin(dt_condicao_tempo_selecionado)]
+    df = df[df["condicao_metereologica"].isin(dt_condicao_tempo_selecionado)]
 
 if dt_fase_dia_selecionado:
     df_filtrado2 = df_filtrado2[df_filtrado2["fase_dia"].isin(dt_fase_dia_selecionado)]
-    df_sexo = df_sexo[df_sexo["fase_dia"].isin(dt_fase_dia_selecionado)]
+    df = df[df["fase_dia"].isin(dt_fase_dia_selecionado)]
 
 if dt_veiculo_selecionado:
     df_filtrado2 = df_filtrado2[df_filtrado2["tipo_veiculo"].isin(dt_veiculo_selecionado)]
-    df_sexo = df_sexo[df_sexo["tipo_veiculo"].isin(dt_veiculo_selecionado)]
+    df = df[df["tipo_veiculo"].isin(dt_veiculo_selecionado)]
 
 # --------------------------
 
 geojson = gpd.read_file("brazil_geo.json")
 
-accidents_per_state = df_filtrado2.groupby('uf').size().reset_index(name='num_accidents')
+accidents_per_state = df_filtrado2.groupby('estado').size().reset_index(name='num_accidents')
 
 # Realizar o merge dos dados de acidentes com o GeoDataFrame
-merged_data = geojson.merge(accidents_per_state, how='left', left_on='id', right_on='uf')
+merged_data = geojson.merge(accidents_per_state, how='left', left_on='id', right_on='estado')
 
 mapabr = px.choropleth(
     merged_data,
@@ -516,9 +521,16 @@ fig5.update_layout(
     margin=dict(l=0, r=0, t=50, b=50)
 )
 
+col6, col7 = st.columns(2)
+
+with col6:
+    st.plotly_chart(mapabr, use_container_width=True)
+with col7:
+    st.plotly_chart(fig5, use_container_width=True)
+
 consulta6 = """
     SELECT 
-        uf AS Estado,
+        estado AS Estado,
         COUNT(DISTINCT id) AS Total_Acidentes
         FROM df_filtrado2
         GROUP BY Estado
@@ -572,17 +584,17 @@ fig7.update_layout(
     yaxis=dict(tickfont=dict(size=14)),
     margin=dict(l=0, r=0, t=50, b=50)
 )
-col6, col7 = st.columns(2)
 
-with col6:
-    st.plotly_chart(mapabr, use_container_width=True)
-with col7:
-    st.plotly_chart(fig5, use_container_width=True)
+col8,col9 = st.columns(2)
 
+with col8:
+    st.plotly_chart(fig6, use_container_width=True)
+with col9:
+    st.plotly_chart(fig7, use_container_width=True)
 
 consulta8 =""" 
     SELECT
-        CONCAT('BR ', CAST(br AS TEXT)) AS BR,  -- Concatenando o texto 'BR' com o número da coluna br
+        br as BR,
         COUNT(DISTINCT id) AS Total_Acidentes
     FROM df_filtrado2
     GROUP BY BR
@@ -608,14 +620,26 @@ fig8.update_layout(
     margin=dict(l=0, r=0, t=50, b=50)
 )
 
-df_sexo.loc[df_sexo['sexo'] == 'Não Informado', 'sexo'] = 'Ignorado'
+consulta9 = """
+    SELECT      
+        tracado_via AS Tracado_Via,
+        COUNT(DISTINCT id) AS Total_Acidentes
+    FROM df_filtrado2
+    GROUP BY Tracado_Via
+    ORDER BY Total_Acidentes DESC;
+"""
+
+result9 = conn.execute(consulta9)
+result_df9 = result9.fetch_df().sort_values(by='Total_Acidentes')
+
+df.loc[df['sexo'] == 'Não Informado', 'sexo'] = 'Ignorado'
 
 
 consulta9 =""" 
     SELECT
         sexo AS Sexo,
         COUNT (id) AS Total_Acidentes
-    FROM df_sexo
+    FROM df
     GROUP BY Sexo
 """
 
@@ -669,12 +693,6 @@ fig10.update_layout(
     yaxis=dict(tickfont=dict(size=14)),
     margin=dict(l=0, r=0, t=50, b=50)
 )
-col8,col9 = st.columns(2)
-
-with col8:
-    st.plotly_chart(fig6, use_container_width=True)
-with col9:
-    st.plotly_chart(fig7, use_container_width=True)
 
 
 consulta11 =""" 
@@ -739,11 +757,6 @@ fig12.update_layout(
 )
 
 
-st.plotly_chart(fig8, use_container_width=True)
-
-st.plotly_chart(fig9, use_container_width=True)
-
-st.plotly_chart(fig10, use_container_width=True)
 
 col14, col15 = st.columns(2)
 with col14:

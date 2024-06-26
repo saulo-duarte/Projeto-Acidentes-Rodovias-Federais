@@ -27,7 +27,8 @@ CREATE SEQUENCE Relational.id_envolvidos;
 CREATE TABLE Relational.Envolvidos(
     id_envolvidos INT DEFAULT NEXTVAL('Relational.id_envolvidos'::regclass) PRIMARY KEY,
     id_acidente INT REFERENCES Relational.Acidentes(id),
-    tipo_envolvido VARCHAR(30),
+    tipo_envolvido VARCHAR(40),
+    tipo_veiculo VARCHAR(30),
     idade SMALLINT,
     sexo VARCHAR(10),
     ilesos SMALLINT,
