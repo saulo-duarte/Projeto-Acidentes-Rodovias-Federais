@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 import duckdb
 import pandas as pd
 import plotly.express as px
@@ -7,15 +9,17 @@ import numpy as np
 import geopandas as gpd
 from sqlalchemy import create_engine
 
+# Configuração da página
 st.set_page_config(layout="wide")
+load_dotenv()
 
 @st.cache_data
 def load_data():
-    DB_USER = 'postgres'
-    DB_PASSWORD = 'saulo07'
-    DB_HOST = 'localhost'
-    DB_PORT = '5432'
-    DB_NAME = 'projeto_acidentes_rodovias'  
+    DB_USER = os.getenv('POSTGRES_USER')
+    DB_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+    DB_HOST = os.getenv('POSTGRES_HOST')
+    DB_PORT = os.getenv('POSTGRES_PORT')
+    DB_NAME = os.getenv('POSTGRES_DB')  
 
     connection_str = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     engine = create_engine(connection_str)

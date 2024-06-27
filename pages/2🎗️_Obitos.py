@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 import duckdb
 import pandas as pd
 import plotly.express as px
@@ -7,6 +10,7 @@ from sqlalchemy import create_engine
 import geopandas as gpd
 
 st.set_page_config(layout="wide")
+load_dotenv()
 
 @st.cache_data
 def load_data():
