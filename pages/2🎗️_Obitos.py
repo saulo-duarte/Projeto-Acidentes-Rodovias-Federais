@@ -3,26 +3,34 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+from sqlalchemy import create_engine
+import geopandas as gpd
 
 st.set_page_config(layout="wide")
 
 @st.cache_data
-def carregar_dados():
-    df1 = pd.read_csv("Dados_prf_simplificado_parte1.txt", low_memory=False)
-    df2 = pd.read_csv("Dados_prf_simplificado_parte2.txt", low_memory=False)
-    df = pd.concat([df1, df2], ignore_index=True)
-    return df
+def load_data():
+    DB_USER = 'postgres'
+    DB_PASSWORD = 'saulo07'
+    DB_HOST = 'localhost'
+    DB_PORT = '5432'
+    DB_NAME = 'projeto_acidentes_rodovias'  
 
-@st.cache_data
-def carregar_dados2():
-    df1 = pd.read_csv("Dados_sexo_parte1.txt", low_memory=False)
-    df2 = pd.read_csv("Dados_sexo_parte2.txt", low_memory=False)
-    df = pd.concat([df1, df2], ignore_index=True)
-    return df
+    connection_str = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    engine = create_engine(connection_str)
 
-df = carregar_dados()
+    query_acidentes = """
+    SELECT * FROM relational.acidentes
+    INNER JOIN relational.envolvidos
+    ON acidentes.id = envolvidos.id_acidente
+    WHERE envolvidos.mortos >= 1;
+    """
 
-df_sexo = carregar_dados2()
+    df_acidentes = pd.read_sql(query_acidentes, con=engine)
+    return df_acidentes
+
+df = load_data()
+
 
 st.markdown("""
     <style>
@@ -44,7 +52,7 @@ st.sidebar.markdown("# Filtros - 1")
 df_filtrado = df.copy()
 municipio_selecionado = []
 
-estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["uf"].unique())
+estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["estado"].unique())
 
 regiao_selecionada = st.sidebar.multiselect("Selecione as regiões", df["regiao"].unique())
 
@@ -57,20 +65,20 @@ condicao_tempo_selecionado = st.sidebar.multiselect("Selecione a condição mete
 fase_dia_selecionado = st.sidebar.multiselect("Selecione a fase do dia", df['fase_dia'].unique())
 
 if regiao_selecionada:
-    estados_regiao_selecionada = df[df["regiao"].isin(regiao_selecionada)]["uf"].unique()
+    estados_regiao_selecionada = df[df["regiao"].isin(regiao_selecionada)]["estado"].unique()
     estado_selecionado.extend(estados_regiao_selecionada)
     estado_selecionado = list(set(estado_selecionado))
 
-    municipios_disponiveis = df[df["uf"].isin(estado_selecionado)]["municipio"].unique()
+    municipios_disponiveis = df[df["estado"].isin(estado_selecionado)]["municipio"].unique()
     municipio_selecionado = st.sidebar.multiselect("Selecione o(s) Município(s)", municipios_disponiveis)
 
 
 if estado_selecionado and not regiao_selecionada: 
-    municipios_disponiveis = df[df["uf"].isin(estado_selecionado)]["municipio"].unique()
+    municipios_disponiveis = df[df["estado"].isin(estado_selecionado)]["municipio"].unique()
     municipio_selecionado = st.sidebar.multiselect("Selecione o(s) Município(s)", municipios_disponiveis)
 
 if estado_selecionado:
-    df_filtrado = df_filtrado[df_filtrado["uf"].isin(estado_selecionado)]
+    df_filtrado = df_filtrado[df_filtrado["estado"].isin(estado_selecionado)]
 
 if municipio_selecionado:
     df_filtrado = df_filtrado[df_filtrado["municipio"].isin(municipio_selecionado)]
@@ -95,7 +103,7 @@ query_acidentes_com_vitimas = """
     SELECT 
         COUNT(DISTINCT id) AS Acidente_com_vitimas
         FROM df_filtrado
-        WHERE mortos >= 1;"""
+;"""
 
 result_cartao1 = conn.execute(query_acidentes_com_vitimas).fetchone()
 
@@ -160,10 +168,9 @@ st.markdown("---")
 
 consulta1 = """
    SELECT 
-    STRFTIME('%Y', CAST(data_inversa AS DATE)) AS Ano,
+    STRFTIME('%Y', CAST(data_completa AS DATE)) AS Ano,
     COUNT(DISTINCT id) AS Total_acidentes_por_ano
 FROM df_filtrado
-WHERE mortos >= 1 
 GROUP BY Ano;
 """
 
@@ -173,12 +180,12 @@ result_df1 = result_df1.sort_values(by=['Ano'])
 
 fig1 = px.bar(result_df1, x='Ano', y='Total_acidentes_por_ano', 
              labels={'Total_acidentes_por_ano': '', 'Ano': 'Ano'},
-             title='Óbitos por Ano')
+             title='Acidentes por Ano')
 
 fig1.update_traces(marker_color='#ba4a63')
 
 fig1.update_layout( 
-    title={'x': 0.4,'font': {'size': 30}},
+    title={'x': 0.2,'font': {'size': 30}},
     xaxis_title='Ano',
     xaxis_tickangle=-45,
     width= 400, 
@@ -186,18 +193,18 @@ fig1.update_layout(
     bargap=0.2,
     xaxis=dict(tickfont=dict(size=14)),
     yaxis=dict(tickfont=dict(size=14)),
-    margin=dict(l=20, r=0, t=50, b=50),
+    margin=dict(l=0, r=0, t=50, b=50),
     uirevision='Traces'
 )
 
 fig1.update_xaxes(type='category')
 
 fig1.add_trace(
-    go.Scatter( 
+    go.Scatter(
         x=result_df1['Ano'],
         y=result_df1['Total_acidentes_por_ano'],
         mode='lines',
-        line=dict(color='#011e47', width=2.5, shape='spline'),
+        line=dict(color='Red', width=2.5, dash='solid', shape='spline'),
         showlegend=False
     )
 )
@@ -205,11 +212,10 @@ fig1.add_trace(
 # Dados do segundo gráfico
 consulta2 = """
    SELECT 
-    STRFTIME('%m', CAST(data_inversa AS DATE)) AS Mes_Numero,
-    STRFTIME('%Y', CAST(data_inversa AS DATE)) AS Ano,
+    STRFTIME('%m', CAST(data_completa AS DATE)) AS Mes_Numero,
+    STRFTIME('%Y', CAST(data_completa AS DATE)) AS Ano,
     COUNT(DISTINCT id) AS Numero_de_Acidentes
    FROM df_filtrado
-   WHERE mortos >= 1 
    GROUP BY Mes_Numero, Ano;
 """
 
@@ -218,15 +224,18 @@ result_df2 = result2.fetch_df()
 
 meses_portugues = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
 result_df2['Mes'] = result_df2['Mes_Numero'].astype(int).map(lambda x: meses_portugues[x-1])
-result_df2 = result_df2.sort_values(by='Mes_Numero')
+
 result_df2 = result_df2.sort_values(by=['Ano', 'Mes_Numero'])
+
 
 fig2 = px.line(result_df2, x='Mes', y='Numero_de_Acidentes', color='Ano',
                labels={'Numero_de_Acidentes': '', 'Mes': 'Mês', 'Ano': 'Ano'},
                title='Acidentes por Mês nos Últimos Três Anos',
-               color_discrete_sequence=['#f6ff00','#ffbb00', '#f04000', '#a10005'])
+               color_discrete_sequence=['#ad9e26','#36353d', '#63a8ab', '#db091a'])
 
-fig2.update_traces(line_width=3)
+fig2.update_traces(line=dict(width=3.5, shape='spline'))
+
+fig2.data[3].update(line=dict(dash='longdash'))
 
 fig2.update_layout(
     title={'x': 0.1, 'font': {'size': 30}}, 
@@ -247,14 +256,18 @@ fig2.update_layout(
         font=dict(size=20),
         traceorder="normal",
         itemsizing='constant'
-    ))
+    )
+)
+# ------
+
+
 # --------------------------- Gráfico dos dias da semana -----------------------
 
 # Dados do segundo gráfico
 consulta3 = """
    SELECT 
-    STRFTIME('%w', CAST(data_inversa AS DATE)) AS Dia_Semana_Numero,
-    CASE STRFTIME('%w', CAST(data_inversa AS DATE))
+    STRFTIME('%w', CAST(data_completa AS DATE)) AS Dia_Semana_Numero,
+    CASE STRFTIME('%w', CAST(data_completa AS DATE))
         WHEN '0' THEN 'Domingo'
         WHEN '1' THEN 'Segunda'
         WHEN '2' THEN 'Terça'
@@ -265,7 +278,6 @@ consulta3 = """
     END AS Dia_Semana,
     COUNT(DISTINCT id) AS Numero_de_Acidentes
    FROM df_filtrado
-   WHERE mortos >= 1 
    GROUP BY Dia_Semana_Numero
    ORDER BY CAST(Dia_Semana_Numero AS INTEGER);
 """
@@ -279,8 +291,7 @@ fig3 = px.bar(result_df3, x='Dia_Semana', y='Numero_de_Acidentes',
              labels={'Numero_de_Acidentes': '', 'Dia_semana': 'Dia da Semana'},
              title='Acidentes Por Dia da Semana')
 
-cor_fim_de_semana = '#82142c'
-
+cor_fim_de_semana = '#244470'
 fig3.data[0].marker.color = [cor_fim_de_semana if dia == 'Sábado' or dia == 'Domingo' else '#ba4a63' for dia in result_df3['Dia_Semana']]
 
 fig3.update_layout(
@@ -299,10 +310,10 @@ fig3.add_trace(
     go.Scatter(
         x=result_df3['Dia_Semana'],
         y=result_df3['Numero_de_Acidentes'],
-        mode='lines',
-        line=dict(color='#011e47', width=2.5, shape='spline'),
+        mode='lines+markers',
+        line=dict(color='Red', width=2.5, dash='solid'),
         showlegend=False
-)
+    )
 )
 
 consulta4 = """
@@ -310,7 +321,6 @@ consulta4 = """
         uso_solo AS Urbano_Rural,
         COUNT(DISTINCT id) AS Total_Acidentes
     FROM df_filtrado
-    WHERE mortos >= 1 
     GROUP BY Urbano_Rural;"""
 
 result4 = conn.execute(consulta4)
@@ -321,23 +331,26 @@ fig4 = go.Figure(data=[go.Pie(labels=result_df4['Urbano_Rural'], values=result_d
 
 cores = {'Rural': '#578755', 'Urbano': '#32346b'}
 
-fig4.update_traces(marker=dict(colors=[cores[x] for x in result_df4['Urbano_Rural']]), textfont=dict(size=20))
-
+fig4.update_traces(marker=dict(colors=[cores[x] for x in result_df4['Urbano_Rural']]), textfont=dict(size=20), textinfo='percent')
+fig4.update_layout(legend=dict(font=dict(size=20)))
 fig4.update_layout(
-    title='Zonas Urbanas ou Rural',
-    title_font_size=30, 
-    title_x=0.15,
-    height=350, 
-    width=400,
-    margin=dict(l=0, r=0, t=50, b=50),
-    uirevision='Traces',
     legend=dict(
         orientation="h",  
         x=0.31,            
         y=0,            
-    font=dict(size=20)
+        font=dict(size=20)
+
     )
 )
+
+
+fig4.update_layout(title='Zonas Urbanas ou Rural',
+                   title_font_size=30, 
+                   title_x=0.15,
+                   height=350, 
+                   width=400,
+                   margin=dict(l=0, r=0, t=50, b=50),
+                   uirevision='Traces')
 
 
 col1, col2, col3 = st.columns(3)
@@ -357,9 +370,9 @@ st.markdown("-------")
 # ---------------------------------------------
 #Detalhes
 
-df['data_inversa'] = pd.to_datetime(df['data_inversa'])
-endDate = pd.to_datetime(df['data_inversa']).max()
-startDate = pd.to_datetime(df['data_inversa']).min()
+df['data_completa'] = pd.to_datetime(df['data_completa'])
+endDate = pd.to_datetime(df['data_completa']).max()
+startDate = pd.to_datetime(df['data_completa']).min()
 col5, col6 = st.columns(2)
 with col5:
     date1 = st.date_input("Data inicial", startDate.date())
@@ -369,7 +382,7 @@ with col6:
 
 df_filtrado2 = df.copy()
 
-df_filtrado2 = df.loc[(df['data_inversa'] >= pd.Timestamp(date1)) & (df['data_inversa'] <= pd.Timestamp(date2))]
+df_filtrado2 = df.loc[(df['data_completa'] >= pd.Timestamp(date1)) & (df['data_completa'] <= pd.Timestamp(date2))]
 
 
 st.sidebar.markdown("----------")
@@ -377,47 +390,70 @@ st.sidebar.title("Filtros - 2")
 
 
 dt_regiao_selecionada = st.sidebar.multiselect("Selecione as regiões", df["regiao"].unique(), key="regiao")
-dt_estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["uf"].unique(), key="uf")
+dt_estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["estado"].unique(), key="estado")
 dt_veiculo_selecionado = st.sidebar.multiselect("Selecione os tipos de veículos", df['tipo_veiculo'].unique(), key='veiculo')
 dt_condicao_tempo_selecionado = st.sidebar.multiselect("Selecione a condição meteorológica", df["condicao_metereologica"].unique(), key='tempo')
 dt_fase_dia_selecionado = st.sidebar.multiselect("Selecione a fase do dia", df["fase_dia"].unique(), key='fase_dia')
 
 if dt_regiao_selecionada:
-    dt_estado_selecionado.extend(df[df["regiao"].isin(dt_regiao_selecionada)]["uf"].unique())
-    df_sexo = df_sexo[df_sexo['regiao'].isin(dt_regiao_selecionada)]
+    dt_estado_selecionado.extend(df[df["regiao"].isin(dt_regiao_selecionada)]["estado"].unique())
 
 if dt_estado_selecionado:
-    dt_municipios_disponiveis = df[df["uf"].isin(dt_estado_selecionado)]["municipio"].unique()
+    dt_municipios_disponiveis = df[df["estado"].isin(dt_estado_selecionado)]["municipio"].unique()
     dt_municipio_selecionado = st.sidebar.multiselect("Selecione o(s) Município(s)", dt_municipios_disponiveis)
 
     if dt_municipio_selecionado:
         df_filtrado2 = df_filtrado2[df_filtrado2["municipio"].isin(dt_municipio_selecionado)]
-        df_sexo = df_sexo[df_sexo["municipio"].isin(dt_municipio_selecionado)]
 
 if dt_estado_selecionado:
-    df_filtrado2 = df_filtrado2[df_filtrado2["uf"].isin(dt_estado_selecionado)]
-    df_sexo = df_sexo[df_sexo['uf'].isin(dt_estado_selecionado)]
+    df_filtrado2 = df_filtrado2[df_filtrado2["estado"].isin(dt_estado_selecionado)]
 
 if dt_condicao_tempo_selecionado:
     df_filtrado2 = df_filtrado2[df_filtrado2["condicao_metereologica"].isin(dt_condicao_tempo_selecionado)]
-    df_sexo = df_sexo[df_sexo['condicao_metereologica'].isin(dt_condicao_tempo_selecionado)]
 
 if dt_fase_dia_selecionado:
     df_filtrado2 = df_filtrado2[df_filtrado2["fase_dia"].isin(dt_fase_dia_selecionado)]
-    df_sexo = df_sexo[df_sexo['fase_dia'].isin(dt_fase_dia_selecionado)]
 
 if dt_veiculo_selecionado:
     df_filtrado2 = df_filtrado2[df_filtrado2["tipo_veiculo"].isin(dt_veiculo_selecionado)]
-    df_sexo = df_sexo[df_sexo['tipo_veiculo'].isin(dt_veiculo_selecionado)]
 
 
 # Gráficos -------------------------------
+geojson = gpd.read_file("brazil_geo.json")
+
+consulta_mapa = """
+    SELECT
+        estado AS estado,
+        COUNT(DISTINCT id) AS num_accidents
+        FROM df_filtrado2
+        GROUP BY estado;
+        """
+
+con_accidents_per_state = conn.execute(consulta_mapa)
+accidents_per_state = con_accidents_per_state.fetch_df()
+
+# Realizar o merge dos dados de acidentes com o GeoDataFrame
+merged_data = geojson.merge(accidents_per_state, how='left', left_on='id', right_on='estado')
+
+mapabr = px.choropleth(
+    merged_data,
+    geojson=merged_data.set_geometry('geometry'),
+    locations=merged_data.index,
+    color='num_accidents',
+    color_continuous_scale='YlOrRd',
+    labels={'num_accidents': 'Número de Acidentes'},
+    hover_name='name',
+    hover_data={'num_accidents': True},
+)
+
+mapabr.update_geos(fitbounds='locations', visible=False, projection_type='orthographic')
+
+
 consulta5 = """
     SELECT 
         regiao AS Regiao,
         COUNT(DISTINCT id) AS Total_Acidentes
         FROM df_filtrado2
-        WHERE mortos >= 1 
         GROUP BY regiao
         ORDER BY Total_Acidentes ASC;
     """
@@ -440,12 +476,18 @@ fig5.update_layout(
     margin=dict(l=0, r=0, t=50, b=50)
 )
 
+col6, col7 = st.columns(2)
+
+with col6:
+    st.plotly_chart(mapabr, use_container_width=True)
+with col7:
+    st.plotly_chart(fig5, use_container_width=True)
+
 consulta6 = """
     SELECT 
-        uf AS Estado,
+        estado AS Estado,
         COUNT(DISTINCT id) AS Total_Acidentes
         FROM df_filtrado2
-        WHERE mortos >= 1 
         GROUP BY Estado
         ORDER BY Total_Acidentes ASC;
     """
@@ -474,7 +516,6 @@ consulta7 = """
         municipio AS Municipio,
         COUNT(DISTINCT id) AS Total_Acidentes
         FROM df_filtrado2
-        WHERE mortos >= 1 
         GROUP BY Municipio
         ORDER BY Total_Acidentes DESC LIMIT 10;
     """
@@ -498,21 +539,19 @@ fig7.update_layout(
     yaxis=dict(tickfont=dict(size=14)),
     margin=dict(l=0, r=0, t=50, b=50)
 )
-col7, col10, col13 = st.columns(3)
 
-with col7:
-    st.plotly_chart(fig5, use_container_width=True)
-with col10:
+col8,col9 = st.columns(2)
+
+with col8:
     st.plotly_chart(fig6, use_container_width=True)
-with col13:
-     st.plotly_chart(fig7, use_container_width=True)
+with col9:
+    st.plotly_chart(fig7, use_container_width=True)
 
 consulta8 =""" 
     SELECT
-        CONCAT('BR ', CAST(br AS TEXT)) AS BR,  -- Concatenando o texto 'BR' com o número da coluna br
+        br as BR,
         COUNT(DISTINCT id) AS Total_Acidentes
     FROM df_filtrado2
-    WHERE mortos >= 1 
     GROUP BY BR
     ORDER BY Total_Acidentes DESC LIMIT 10;
 """
@@ -536,53 +575,157 @@ fig8.update_layout(
     margin=dict(l=0, r=0, t=50, b=50)
 )
 
-df_sexo.loc[df_sexo['sexo'] == 'Não Informado', 'sexo'] = 'Ignorado'
-
-consulta9 =""" 
-    SELECT
-        sexo AS sexo,
-        COUNT(id) AS Total_Acidentes
-    FROM df_sexo
-    WHERE mortos = 1
-    GROUP BY sexo;
+consulta9 = """
+    SELECT      
+        tracado_via AS Tracado_Via,
+        COUNT(DISTINCT id) AS Total_Acidentes
+    FROM df_filtrado2
+    GROUP BY Tracado_Via
+    ORDER BY Total_Acidentes DESC;
 """
 
-
 result9 = conn.execute(consulta9)
-result_df9 = result9.fetch_df()
+result_df9 = result9.fetch_df().sort_values(by='Total_Acidentes')
+
+fig9 = px.bar(result_df9, x="Total_Acidentes", y="Tracado_Via", orientation='h')
+
+fig9.update_traces(marker_color='#ba4a63')
+fig9.update_layout(
+    title='Tracado Via',
+    xaxis_title='',
+    yaxis_title='',
+    title_font_size=30,
+    title_x=0.4,
+    height=400,
+    width=450,
+    xaxis=dict(tickfont=dict(size=14)),
+    yaxis=dict(tickfont=dict(size=14)),
+    margin=dict(l=0, r=0, t=50, b=50)
+)
+
+consulta10 = """
+    SELECT 
+        tipo_pista, 
+        COUNT(DISTINCT id) AS Total_Acidentes
+    FROM df_filtrado2
+    GROUP BY tipo_pista;
+"""
+
+result10 = conn.execute(consulta10)
+result_df10 = result10.fetch_df().sort_values(by='Total_Acidentes')
+
+fig10 = px.bar(result_df10, x="Total_Acidentes", y="tipo_pista", orientation='h')
+
+fig10.update_traces(marker_color='#ba4a63')
+
+fig10.update_layout(
+    title='Tipo de Pista',
+    xaxis_title='',
+    yaxis_title='',
+    title_font_size=30,
+    title_x=0.4,
+    height=400,
+    width=450,
+    xaxis=dict(tickfont=dict(size=14)),
+    yaxis=dict(tickfont=dict(size=14)),
+    margin=dict(l=0, r=0, t=50, b=50)
+)
+
+col10, col11, col12 = st.columns(3)
+
+with col10:
+    st.plotly_chart(fig8, use_container_width=True)
+with col11:
+    st.plotly_chart(fig9, use_container_width=True)
+with col12:
+    st.plotly_chart(fig10, use_container_width=True)
 
 
-fig9 = go.Figure(data=[go.Pie(labels=result_df9['sexo'], values=result_df9['Total_Acidentes'])])
 
+df.loc[df['sexo'] == 'Não Informado', 'sexo'] = 'Ignorado'
+
+consulta11 =""" 
+    SELECT
+        sexo AS Sexo,
+        COUNT (id) AS Total_Acidentes
+    FROM df
+    GROUP BY Sexo
+"""
+
+result11 = conn.execute(consulta11)
+result_df11 = result11.fetch_df()
+
+
+fig11 = go.Figure(data=[go.Pie(labels=result_df11['Sexo'], values=result_df11['Total_Acidentes'])])
 cores = {'Masculino': '#5e62d1', 'Feminino': '#e86bd7', 'Ignorado': '#afabcf'}
-fig9.update_traces(marker=dict(colors=[cores[x] for x in result_df9['sexo']]), textfont=dict(size=20), textinfo='percent')
-
-fig9.update_layout(title='sexo',
+fig11.update_traces(marker=dict(colors=[cores[x] for x in result_df11['Sexo']]), textfont=dict(size=20), textinfo='percent')
+fig11.update_layout(legend=dict(font=dict(size=20)))
+fig11.update_layout(title='Sexo',
                    title_font_size=30, 
                    title_x=0.35,
                    height=350, 
                    width=400,
                    margin=dict(l=0, r=20, t=50, b=50),
                    uirevision='Traces',
-                  )
+                   legend=dict(
+                   orientation="h",  
+                   x=0.1,            
+                   y=0,            
+                  font=dict(size=20)
+                  ))
 
-consulta10 = """
+#--------------
+
+consulta12 ="""
+    SELECT 
+        idade AS Idade,
+        COUNT(DISTINCT id) AS Total_Acidentes
+    FROM df_filtrado2
+    GROUP BY Idade;
+    """
+
+result12 = conn.execute(consulta12)
+result_df12 = result12.fetch_df().sort_values(by='Idade')
+
+fig12 = px.histogram(result_df12, x="Idade", y="Total_Acidentes", nbins=30, histfunc='sum')
+
+fig12.update_traces(marker_color='#ba4a63')
+fig12.update_layout(
+    title='Idade',
+    xaxis_title='',
+    yaxis_title='',
+    title_font_size=30,
+    title_x=0.4,
+    height=400,
+    width=450,
+    xaxis=dict(tickfont=dict(size=14)),
+    yaxis=dict(tickfont=dict(size=14)),
+    margin=dict(l=0, r=0, t=50, b=50)
+)
+
+col13, col14 = st.columns(2)
+
+with col13:
+    st.plotly_chart(fig11, use_container_width=True)
+with col14:
+    st.plotly_chart(fig12, use_container_width=True)
+
+consulta13 = """
     SELECT 
         fase_dia AS horario,
         COUNT(DISTINCT id) AS Total_Acidentes
         FROM df_filtrado2
-        WHERE mortos >= 1 
-        GROUP BY fase_dia
+        GROUP BY horario
         ORDER BY Total_Acidentes DESC;
 """
 
-result10 = conn.execute(consulta10)
-result_df10 = result10.fetch_df().sort_values(by='Total_Acidentes')
+result13 = conn.execute(consulta13)
+result_df13 = result13.fetch_df().sort_values(by='Total_Acidentes')
 
-fig10 = px.bar(result_df10, x="Total_Acidentes", y="horario", orientation='h')
+fig13 = px.bar(result_df13, x="Total_Acidentes", y="horario", orientation='h')
 
-fig10.update_traces(marker_color='#ba4a63')
-fig10.update_layout(
+fig13.update_traces(marker_color='#ba4a63')
+fig13.update_layout(
     title='Horários',
     xaxis_title='',
     yaxis_title='',
@@ -594,39 +737,99 @@ fig10.update_layout(
     yaxis=dict(tickfont=dict(size=14)),
     margin=dict(l=0, r=0, t=50, b=50)
 )
-col10,col11,col14 = st.columns(3)
 
-with col10:
-    st.plotly_chart(fig8,use_container_width=True)
-with col11:
-    st.plotly_chart(fig9,use_container_width=True)
-with col14:
-    st.plotly_chart(fig10,use_container_width=True)
+consulta14 = """
+    SELECT STRFTIME('%H', data_completa) AS Hora,
+           COUNT(DISTINCT id) AS Total_Acidentes
+    FROM df_filtrado2
+    GROUP BY Hora
+    ORDER BY Hora;
+"""
+
+
+result14 = conn.execute(consulta14)
+result_df14 = result14.fetch_df()
+
+fig14 = px.histogram(result_df14, x="Hora", y="Total_Acidentes", nbins=12, histfunc='sum')
+
+fig14.update_traces(marker_color='#ba4a63')
+
+fig14.update_layout(
+    title='Horas',
+    xaxis_title='',
+    yaxis_title='',
+    title_font_size=30,
+    title_x=0.4,
+    height=400,
+    width=450,
+    xaxis=dict(tickfont=dict(size=14)),
+    yaxis=dict(tickfont=dict(size=14)),
+    margin=dict(l=0, r=0, t=50, b=50)
+)
+
+consulta15 = """
+    SELECT
+        condicao_metereologica AS Condicao_Metereologica,
+        COUNT(DISTINCT id) AS Total_Acidentes
+    FROM df_filtrado2
+    GROUP BY Condicao_Metereologica
+    ORDER BY Total_Acidentes DESC;
+"""
+
+result15 = conn.execute(consulta15)
+result_df15 = result15.fetch_df().sort_values(by='Total_Acidentes')
+
+fig15 = px.bar(result_df15, x="Total_Acidentes", y="Condicao_Metereologica", orientation='h')
+
+fig15.update_traces(marker_color='#ba4a63')
+fig15.update_layout(
+    title='Condição Metereológica',
+    xaxis_title='',
+    yaxis_title='',
+    title_font_size=30,
+    title_x=0.4,
+    height=400,
+    width=450,
+    xaxis=dict(tickfont=dict(size=14)),
+    yaxis=dict(tickfont=dict(size=14)),
+    margin=dict(l=0, r=0, t=50, b=50)
+)
+
+col15, col16, col17 = st.columns(3)
+
+with col15:
+    st.plotly_chart(fig13, use_container_width=True)
+with col16:
+    st.plotly_chart(fig14, use_container_width=True)
+with col17:
+    st.plotly_chart(fig15, use_container_width=True)
 
 consulta11 =""" 
     SELECT
         causa_acidente AS Causa_Acidente,
         COUNT(DISTINCT id) AS Total_Acidentes
     FROM df_filtrado2
-    WHERE mortos >= 1 
-    GROUP BY Causa_Acidente
+    GROUP BY causa_acidente
     ORDER BY Total_Acidentes DESC LIMIT 10;
 """
 
 result11 = conn.execute(consulta11)
 result_df11 = result11.fetch_df().sort_values(by='Total_Acidentes')
-result_df11['Causa_Acidente'] = result_df11['Causa_Acidente'].str.slice(0, 46)
+result_df11['Causa_Acidente'] = result_df11['Causa_Acidente'].str.slice(0, 45)
 
 
 fig11 = px.bar(result_df11, x="Total_Acidentes", y="Causa_Acidente", orientation='h')
 
-fig11.update_traces(marker_color='#ba4a63')
+acidentes_destaques = ["Velocidade Incompatível", "Condutor Dormindo", "Ingestão de álcool pelo condutor", "Ultrapassagem Indevida"]
+cor_acidente_destaques = '#1a3654'
+fig11.data[0].marker.color = [cor_acidente_destaques if causa in acidentes_destaques else '#ba4a63' for causa in result_df11['Causa_Acidente']]
+
 fig11.update_layout(
-    title='TOP 10 Causas Acidentes',
+    title='TOP 10 Acidentes',
     xaxis_title='',
     yaxis_title='',
     title_font_size=30,
-    title_x=0.4,
+    title_x=0,
     height=400,
     width=450,
     xaxis=dict(tickfont=dict(size=14)),
@@ -639,7 +842,6 @@ consulta12 ="""
         tipo_acidente AS Tipo_Acidente,
         COUNT(DISTINCT id) AS Total_Acidentes
     FROM df_filtrado2
-    WHERE mortos >= 1 
     GROUP BY Tipo_Acidente
     ORDER BY Total_Acidentes DESC LIMIT 10;
 """
@@ -663,10 +865,10 @@ fig12.update_layout(
     margin=dict(l=0, r=0, t=50, b=50)
 )
 
-col13, col14 = st.columns(2)
 
-with col13:
-    st.plotly_chart(fig11, use_container_width=True)
+
+col14, col15 = st.columns(2)
 with col14:
+    st.plotly_chart(fig11, use_container_width=True)
+with col15:
     st.plotly_chart(fig12, use_container_width=True)
-
