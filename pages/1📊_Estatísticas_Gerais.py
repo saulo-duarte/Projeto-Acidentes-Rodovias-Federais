@@ -45,7 +45,6 @@ st.markdown("""
         <h1 class='custom-title'>Acidentes em Rodovias Federais</h1>
     </div>
 """, unsafe_allow_html=True)
-st.logo("https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Prf_brasao_novo.jpg/738px-Prf_brasao_novo.jpg")
 st.markdown("----")
 
 st.markdown("""

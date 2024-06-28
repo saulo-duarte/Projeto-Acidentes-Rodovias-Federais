@@ -36,3 +36,9 @@ CREATE TABLE Relational.Envolvidos(
     feridos_graves SMALLINT,
     mortos SMALLINT
 );
+
+COPY acidentes (id, data_completa, regiao, uf, municipio, br, km, causa_acidente, tipo_acidente, classificacao_acidente, fase_dia, sentido_via, condicao_metereologica, tipo_pista, tracado_via, uso_solo, delegacia, latitude, longitude)
+FROM '/docker-entrypoint-initdb.d/dados/acidentes.txt' DELIMITER ',' CSV HEADER;
+COPY relational.envolvidos (id_acidente, tipo_veiculo ,tipo_envolvido, idade, sexo, ilesos, feridos_leves, feridos_graves, mortos)
+FROM '/docker-entrypoint-initdb.d/dados/envolvidos.txt' DELIMITER ',' CSV HEADER;
+
