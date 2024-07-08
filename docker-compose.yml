@@ -12,7 +12,7 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./dados:/docker-entrypoint-initdb.d/dados
+      - ./dados:/docker-entrypoint-initdb.d/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - mynetwork
@@ -24,7 +24,7 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@{POSTGRES_HOST}:5432/${POSTGRES_DB}
     networks:
       - mynetwork
 

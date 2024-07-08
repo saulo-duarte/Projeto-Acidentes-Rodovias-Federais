@@ -1,12 +1,14 @@
 FROM python:3.10-slim
 
 # Define o diretório de trabalho dentro do contêiner
-WORKDIR /app
+COPY . /app
 
-COPY requirements.txt .
+WORKDIR /app
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+EXPOSE 80
 
-CMD ["streamlit", "run", "Infos.py"]
+ENTRYPOINT ["streamlit", "run"]
+
+CMD ["Infos.py"]
