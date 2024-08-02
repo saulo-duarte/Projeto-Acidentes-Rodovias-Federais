@@ -6,6 +6,13 @@
 
 O objetivo deste projeto é analisar os dados de acidentes em rodovias federais do Brasil, disponibilizados pela Polícia Rodoviária Federal (PRF), com o intuito de identificar padrões e características dos acidentes, bem como as possíveis causas e consequências. A análise dos dados será realizada Python e suas bibliotecas para análise de dados, como Pandas, Numpy, Matplotlib, plotly, e sklearn para machine learning.
 
+### Tópicos
+
+- [Tecnologias](#Tecnologias-Utilizadas-🔧)
+- [Pipeline](#Pipeline)
+- [Perguntas a serem respondidas](#Perguntas-a-serem-respondidas)
+- [Insights](#Insights)
+
 ### Tecnologias Utilizadas 🔧
 
 - Python (Pandas, Numpy, Matplotlib, Plotly, Sklearn, streamlit, etc)
@@ -107,7 +114,42 @@ Porém, a região nordeste é a que possui a maior taxa de mortalidade, seguida 
 
 ![image](images/taxa_mortalidade_regiao.png)
 
-Olhando para os estados, Minas Gerais é o estado com o maior número de acidentes, seguido por Santa Catarina e Paraná. Já o estado de Roraima é o que possui o menor número de acidentes.
+Olhando para os estados, Minas Gerais é o estado com o maior número de acidentes, seguido por Santa Catarina e Paraná. Já os estados do norte possuem o menor número de acidentes.
 
 ![](images/acidentes_por_estado.png)
 
+Porém os estados do norte e nordeste apresentam mais que o dobro de taxa de mortalidade em relação aos estados do sul e sudeste. 
+
+![image](images/taxa_mortalidade_estados.png)
+
+Olhando para os 10 municipios com maior número de acidentes, é possível observar que a maioria deles estão localizados na região sudeste, seguido pela região sul e nordeste.
+
+![](images/top_10_municipios_com_mais_acidentes.png)
+
+As BRs com maior número de acidentes são a BR-116, BR-101, BR-040 e BR-381, que são rodovias que cortam diversos estados possuem um grande fluxo de veículos. Porém essas rodovias não são as que possuem a maior taxa de mortalidade.
+
+![](images/brs_com_mais_acidentes.png)
+
+Porém essas rodovias não são as que possuem a maior taxa de mortalidade.
+
+![](images/taxa_mortalidade_br.png)
+
+**Causas de acidentes**
+
+Os tipos de acidentes mais comuns são a colisão traseira, colisão lateral e colisão frontal, que são acidentes que podem ocorrer em diversas situações, como ultrapassagens indevidas, desrespeito à sinalização e excesso de velocidade.
+
+![](images/causa_acidentes.png)
+
+Porém é possível observar que os acidentes com maior taxa de mortalidade são causas por descuidos dos motoristas e pedestres, podendo ser evitados com mais atenção e cuidado.
+
+![](images/taxa_mortalidade_causa.png)
+
+**Tipos de acidentes**
+
+Os tipos de acidentes mais comuns são a colisão traseira, saída da pista e tombamento, que são acidentes que podem ocorrer em diversas situações, como falta de atenção, ultrapassagens indevidas, desrespeito à sinalização e excesso de velocidade.
+
+![](images/tipos_acidentes.png)
+
+Porém é possível observar que os acidentes com maior taxa de mortalidade são os atropelamentos e colisão frontal, que são acidentes que podem ser mais graves e fatais.
+
+![](images/mortalidade_tipo_acidente.png)

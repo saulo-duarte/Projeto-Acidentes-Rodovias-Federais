@@ -226,6 +226,23 @@ SELECT
 FROM taxa_mortalidade_causa_acidente
 ORDER BY taxa_mortalidade DESC;
 
+WITH mortalidade_tipo_acidente AS (
+    SELECT
+        ac.tipo_acidente,
+        COUNT(*) AS total_envolvidos,
+        SUM(en.mortos) AS total_mortos,
+        ROUND(SUM(en.mortos)::DECIMAL / COUNT(*) * 100, 2) AS taxa_mortalidade
+    FROM relational.acidentes ac
+    INNER JOIN relational.envolvidos en ON ac.id = en.id_acidente
+    GROUP BY tipo_acidente
+    HAVING SUM(en.mortos) > 0
+    )
+
+SELECT
+    *
+FROM mortalidade_tipo_acidente
+ORDER BY taxa_mortalidade DESC;
+
 -- Condição do metereologica
 
 WITH total_envolvidos_condicao_metereologica AS (
@@ -257,9 +274,9 @@ taxa_mortalidade_condicao_metereologica AS (
     INNER JOIN total_mortos_condicao_metereologica tmc ON tec.condicao_metereologica = tmc.condicao_metereologica
     )
 
-SELECTz
+SELECT
     *
 FROM taxa_mortalidade_condicao_metereologica
 ORDER BY taxa_mortalidade DESC;
 
-
+    
