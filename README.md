@@ -39,7 +39,7 @@ O objetivo deste projeto é analisar os dados de acidentes em rodovias federais 
 
 - Qual são as principais características dos acidentes mais graves?
 
-### Pipeline
+## Pipeline
 
 ![images](images/Diagrama_Projeto.png)
 
@@ -47,13 +47,19 @@ O objetivo deste projeto é analisar os dados de acidentes em rodovias federais 
 
 Os dados foram coletados diretamente do site da PRF, disponíveis em: https://portal.prf.gov.br/dados-abertos-acidentes. O dataset utilizado é referente ao ano de 2020 a 2023, e contém informações sobre os acidentes ocorridos nas rodovias federais do Brasil.
 
-2. **Limpeza e Pré-processamento**
+### 2. **Limpeza e Pré-processamento**
 
 Nesta etapa, os dados foram tratados e limpos, removendo valores nulos, duplicados e outliers. Além disso, foram realizadas transformações e ajustes necessários para a análise.
 
-3. **Modelagem de dados**
+### 3. **Modelagem de dados**
 
-Os dados foram modelados e importados para o banco de dados PostgreSQL, utilizando o docker para a criação do container. Em seguida, foram realizadas consultas SQL para a extração de informações relevantes.
+Os dados foram modelados e importados para o banco de dados PostgreSQL, utilizando o docker para a criação do container. Em seguida, foram realizadas consultas SQL para a extração de informações relevantes. A modelagem dos dados foi feita da seguinte forma:
+
+- **Acidentes**: informações sobre os acidentes, como data, hora, tipo, causa, gravidade, etc.
+
+- **Envolvidos**: informações sobre os envolvidos nos acidentes, como condutores, passageiros, pedestres, etc.
+
+Com o intuito de diminuir a redundância de dados, foi criada uma tabela de dimensão para armazenar as informações dos envolvidos, e uma tabela fato para armazenar as informações dos acidentes.
 
 ![image](images/Data_Modelling.png)
 
@@ -72,21 +78,21 @@ Foi aplicado um modelo de machine learning para prever a gravidade dos acidentes
 
 Por fim, os resultados obtidos foram apresentados utilizando streamlit e PowerBI para a criação de dashboards interativos, facilitando a visualização e interpretação dos dados.
 
-### Insights
+## Insights
 
-Praticamente não houve variação no número de acidentes ao longo dos anos, apenas em 2023 houve um aumento significativo.
-    
+Ao analisar os dados, observou-se que praticamente não houve variação no número de acidentes ao longo dos anos, exceto em 2023, quando houve um aumento significativo.
+     
 ![](images/acidentes_por_ano.png)
 
-É possível observar que nos meses de janeiro, julho, outubro e dezembro há um aumento no número de acidentes, o que pode estar relacionado ao período de férias e festas de final de ano.
+A distribuição mensal dos acidentes revela que nos meses de janeiro, julho, outubro e dezembro há um aumento no número de acidentes, **relacionado aos períodos de férias e festas de fim de ano**.
 
 ![](images/acidentes_por_mes.png)
 
-Fica mais evidente quando o gráfico fica segmentado por ano. Além disso é possível observar que a tentativa de "lockdown" surtiu efeito em 2020, com uma queda apartir de março, porém após julho os números voltaram a subir.
+Esse padrão fica mais evidente quando o gráfico é segmentado por ano. Além disso, observa-se que a tentativa de "*lockdown*" em 2020 resultou em uma queda no número de acidentes a partir de março. No entanto, após julho, os números voltaram a subir.
 
 ![](images/acidentes_por_mes_e_ano.png)
 
-Nos dias da semana, é possível observar que os finais de semana (sábado e domingo) possuem um maior número de acidentes, o que pode estar relacionado ao aumento do fluxo de veículos nas rodovias, seguido pelo dia de sexta-feira.
+Analisando os dias da semana, percebe-se que os **finais de semana** (sábado e domingo) têm um maior número de acidentes, o que pode estar relacionado ao aumento do fluxo de veículos nas rodovias. A sexta-feira também apresenta um número elevado de acidentes.
 
 ![](images/acidentes_por_dia_da_semana.png)
 
@@ -98,7 +104,7 @@ Os horários de pico para acidentes são entre 16h e 19h, o que pode estar relac
 
 ![](images/acidentes_por_hora.png)
 
-Porém os horários que apresentam maior gravidade são entre 22hrs até as 5hrs, o que pode estar relacionado a diversos fatores, como a falta de visibilidade, cansaço e ingestão de álcool, além das pistas estarem mais livres, permitindo que os veículos atinjam maiores velocidades.
+Entretanto, os horários que apresentam **maior gravidade são entre 22h e 5h**. Esse aumento na gravidade pode estar relacionado a diversos fatores, como falta de visibilidade, cansaço e ingestão de álcool, além das pistas mais livres, permitindo que os veículos atinjam maiores velocidades.
 
 A tabela a seguir apresenta os 5 horarios com maior taxa de mortalidade de cada ano analisado.
 
@@ -110,15 +116,15 @@ A região com maior número de acidentes é a região sudeste, seguida pela regi
 
 ![](images/acidentes_por_regiao.png)
 
-Porém, a região nordeste é a que possui a maior taxa de mortalidade, seguida pela região norte e centro-oeste. Já a região sul é a que possui a menor taxa de mortalidade.
+Porém, a **região nordeste é a que possui a maior taxa de mortalidade**, seguida pela região norte e centro-oeste. Já a região sul é a que possui a menor taxa de mortalidade.
 
 ![image](images/taxa_mortalidade_regiao.png)
 
-Olhando para os estados, Minas Gerais é o estado com o maior número de acidentes, seguido por Santa Catarina e Paraná. Já os estados do norte possuem o menor número de acidentes.
+Olhando para os estados, Minas Gerais é o estado com o maior número de acidentes, seguido por Santa Catarina e Paraná. Já os estados do norte possuem o menor número de acidentes, pois possuem uma menor densidade populacional e menor fluxo de veículos, o que influencia diretamente no número de acidentes. Além da possibilidade de subnotificação de acidentes.
 
 ![](images/acidentes_por_estado.png)
 
-Porém os estados do norte e nordeste apresentam mais que o dobro de taxa de mortalidade em relação aos estados do sul e sudeste. 
+No entanto, os estados do norte e nordeste apresentam mais que o dobro de taxa de mortalidade em relação aos estados do sul e sudeste. Isso pode estar relacionado a diversos fatores, como a qualidade das rodovias, a falta de sinalização, a imprudência dos motoristas e a falta de atendimento médico adequado.
 
 ![image](images/taxa_mortalidade_estados.png)
 
