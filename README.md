@@ -136,11 +136,8 @@ As BRs com maior número de acidentes são a BR-116, BR-101, BR-040 e BR-381, qu
 
 ![](images/brs_com_mais_acidentes.png)
 
-Porém essas rodovias não são as que possuem a maior taxa de mortalidade.
 
-![](images/taxa_mortalidade_br.png)
-
-**Causas de acidentes**
+### **Causas de acidentes**
 
 Os tipos de acidentes mais comuns são a colisão traseira, colisão lateral e colisão frontal, que são acidentes que podem ocorrer em diversas situações, como ultrapassagens indevidas, desrespeito à sinalização e excesso de velocidade.
 
@@ -150,7 +147,7 @@ Porém é possível observar que os acidentes com maior taxa de mortalidade são
 
 ![](images/taxa_mortalidade_causa.png)
 
-**Tipos de acidentes**
+### **Tipos de acidentes**
 
 Os tipos de acidentes mais comuns são a colisão traseira, saída da pista e tombamento, que são acidentes que podem ocorrer em diversas situações, como falta de atenção, ultrapassagens indevidas, desrespeito à sinalização e excesso de velocidade.
 
@@ -159,3 +156,33 @@ Os tipos de acidentes mais comuns são a colisão traseira, saída da pista e to
 Porém é possível observar que os acidentes com maior taxa de mortalidade são os atropelamentos e colisão frontal, que são acidentes que podem ser mais graves e fatais.
 
 ![](images/mortalidade_tipo_acidente.png)
+
+### **Características dos acidentes mais graves**
+
+Depois de analisar diversas variáveis é possível concluir que **os acidentes mais graves são aqueles que envolvem pedestres**, visto que os pedestres são mais vulneráveis e podem sofrer lesões graves e fatais em caso de acidentes. Contudo, os acidentes que envolvem **falhas na sinalização/iluminação deficiente possuem altas taxas de mortalidade**, pois podem causar confusão e desorientação dos motoristas, aumentando o risco de acidentes. Podendo ser evitados com uma melhor manutenção e sinalização das rodovias.
+
+![](images/acidente_veiculos.png)
+![](images/taxa_mortalidade_veiculos.png)
+
+Ademais, é possível observar que os acidentes causados por imprudência dos motoristas, como **ultrapassagens indevidas, excesso de velocidade e desrespeito à sinalização**, possuem altas taxas de mortalidade, pois aumentam o risco de acidentes graves e fatais. Portanto, é fundamental que os motoristas respeitem as leis de trânsito e adotem uma direção defensiva para evitar acidentes.
+
+O perfil dos envolvidos nos acidentes mais graves é de **homens entre 25 e 40 anos**, que são os mais propensos a se envolver em acidentes de trânsito, entretanto, a idade não é um fator determinante para a gravidade dos acidentes, visto a faixa etária não tem uma grande variação entre os acidentes graves e não graves. 
+
+![](images/idades_acidentes.png)
+
+![](images/sexo_acidentes.png)
+
+## **Machine Learning**
+
+
+## **Conclusão**
+
+A análise dos dados de acidentes em rodovias federais do Brasil revelou diversos insights e padrões interessantes, que podem ser utilizados para a prevenção de acidentes e a redução da taxa de mortalidade. Além disso, a aplicação de técnicas de machine learning permitiu prever a gravidade dos acidentes com base nas características dos acidentes, o que pode ser útil para identificar os fatores de risco e adotar medidas preventivas.
+
+Grande parte dos acidentes não são fatais, **sendo causados por descuidos e falta de atenção dos motoristas**, podendo ser evitados com mais atenção e cuidado. Resultando em colições traseiras, saídas de pista e tombamentos. Porém, os acidentes mais graves são aqueles que envolvem **pedestres, falhas na sinalização e imprudência dos motoristas**, que podem ser evitados com uma melhor infraestrutura e fiscalização das rodovias.
+
+Portanto, é fundamental que os motoristas respeitem as leis de trânsito, adotem uma **direção defensiva e estejam atentos às condições das rodovias** para evitar acidentes e preservar vidas. Além disso, é importante que as autoridades competentes invistam em **melhorias na infraestrutura das rodovias**, principalmente nas regiões do norte e nordeste, que apresentam as maiores taxas de mortalidade.
+
+Medidas como **asfaltar áreas sem pavimentação, melhorar a qualidade do asfalto existente, além de aprimorar a sinalização e a iluminação das rodovias são essenciais**. Adicionalmente, **investir em fiscalização é crucial** para a prevenção de acidentes, punição de motoristas imprudentes, identificação rápida de acidentes, prestação de socorro eficiente e a correção de trechos com falhas de infraestrutura.
+
+Por fim, é importante que as **campanhas de conscientização** e educação no trânsito **sejam intensificadas**, principalmente nas **regiões com maiores índices de acidentes e mortes**, e nos **períodos de férias e festas de fim de ano**, quando o fluxo de veículos é maior e o risco de acidentes é elevado.
