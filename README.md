@@ -6,12 +6,15 @@
 
 O objetivo deste projeto é analisar os dados de acidentes em rodovias federais do Brasil, disponibilizados pela Polícia Rodoviária Federal (PRF), com o intuito de identificar padrões e características dos acidentes, bem como as possíveis causas e consequências. A análise dos dados será realizada Python e suas bibliotecas para análise de dados, como Pandas, Numpy, Matplotlib, plotly, e sklearn para machine learning.
 
+[Aplicação Web](https://acidentes-rodovias-federais.streamlit.app/)
+
 ### Tópicos
 
 - [Tecnologias](#Tecnologias-Utilizadas-🔧)
 - [Pipeline](#Pipeline)
 - [Perguntas a serem respondidas](#Perguntas-a-serem-respondidas)
 - [Insights](#Insights)
+- [Machine Learning](#Machine-Learning)
 
 ### Tecnologias Utilizadas 🔧
 
@@ -47,9 +50,11 @@ O objetivo deste projeto é analisar os dados de acidentes em rodovias federais 
 
 Os dados foram coletados diretamente do site da PRF, disponíveis em: https://portal.prf.gov.br/dados-abertos-acidentes. O dataset utilizado é referente ao ano de 2020 a 2023, e contém informações sobre os acidentes ocorridos nas rodovias federais do Brasil.
 
-### 2. **Limpeza e Pré-processamento**
+### 2. **Limpeza de Dados**
 
 Nesta etapa, os dados foram tratados e limpos, removendo valores nulos, duplicados e outliers. Além disso, foram realizadas transformações e ajustes necessários para a análise.
+
+Para mais detalhes [Jupyter Notebook](https://github.com/saulo-duarte/Projeto-Acidentes-Rodovias-Federais/blob/main/notebooks/data_cleaning.ipynb)
 
 ### 3. **Modelagem de dados**
 
