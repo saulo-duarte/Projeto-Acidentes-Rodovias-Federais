@@ -6,6 +6,7 @@ import streamlit as st
 import numpy as np
 import geopandas as gpd
 from sqlalchemy import create_engine
+import streamlit.components.v1 as components
 
 # Configuração da página
 st.set_page_config(layout="wide")
@@ -473,25 +474,6 @@ consulta_mapa = """
         GROUP BY estado;
         """
 
-con_accidents_per_state = conn.execute(consulta_mapa)
-accidents_per_state = con_accidents_per_state.fetch_df()
-
-# Realizar o merge dos dados de acidentes com o GeoDataFrame
-merged_data = geojson.merge(accidents_per_state, how='left', left_on='id', right_on='estado')
-
-mapabr = px.choropleth(
-    merged_data,
-    geojson=merged_data.set_geometry('geometry'),
-    locations=merged_data.index,
-    color='num_accidents',
-    color_continuous_scale='Darkmint',
-    labels={'num_accidents': 'Número de Acidentes'},
-    hover_name='name',
-    hover_data={'num_accidents': True},
-)
-
-mapabr.update_geos(fitbounds='locations', visible=False, projection_type='orthographic')
-
 
 consulta5 = """
     SELECT 
@@ -523,7 +505,7 @@ fig5.update_layout(
 col6, col7 = st.columns(2)
 
 with col6:
-    st.plotly_chart(mapabr, use_container_width=True)
+    st.image("pic/acidentes_estado.png", use_column_width=True)
 with col7:
     st.plotly_chart(fig5, use_container_width=True)
 
