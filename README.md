@@ -174,6 +174,36 @@ O perfil dos envolvidos nos acidentes mais graves é de **homens entre 25 e 40 a
 
 ## **Machine Learning**
 
+Um modelo de machine learning foi aplicado para prever a gravidade dos acidentes, com base nas características dos acidentes. Para isso, foram utilizadas técnicas de pré-processamento de dados, seleção de features e treinamento do modelo.
+
+O modelo utilizado foi o **XGBoost**, que é um algoritmo de aprendizado de máquina baseado em árvores de decisão, que é eficiente e preciso para a classificação de dados. 
+
+Motivo da escolha do modelo:
+
+- **Eficiência**: O XGBoost é um algoritmo eficiente e rápido, que pode lidar com grandes volumes de dados e realizar previsões em tempo real, utilizando técnicas de otimização e paralelização. Visto que o dataset possui aproximadamente 1 milhão de registros, o XGBoost é uma escolha adequada para lidar com a complexidade dos dados.
+
+- **Precisão**: O XGBoost é um algoritmo preciso e robusto, que pode lidar com dados desbalanceados e ruidosos, e realizar previsões com alta acurácia e confiabilidade, melhorando a qualidade das previsões e reduzindo o erro do modelo. Pois a classe de acidentes com vítimas fatais é uma classe bem menor em relação aos acidentes sem vítimas fatais.
+
+- **Facilidade de uso**: O XGBoost é um algoritmo fácil de usar e implementar, que possui uma ampla documentação e suporte da comunidade, facilitando o desenvolvimento e a manutenção do modelo.
+
+- **Hiperparâmetros**: O XGBoost possui diversos hiperparâmetros que podem ser ajustados para otimizar o desempenho do modelo, como a profundidade da árvore, a taxa de aprendizado e o número de estimadores, permitindo a personalização do modelo de acordo com as características dos dados.
+
+#### **Metodologia**
+
+O modelo foi treinado com as seguintes features:
+
+- Região
+- Tipo de acidente
+- Causa do acidente
+- Tipo de veículo
+- BR
+- Hórario
+
+Foram utilizadas técnicas de pré-processamento de dados, como a codificação de variáveis categóricas, a normalização de variáveis numéricas e a divisão dos dados em treino e teste. Além disso, foi realizada a seleção de features para identificar as variáveis mais relevantes para a previsão da gravidade dos acidentes.
+
+O modelo foi avaliado com base na acurácia e validado com a técnica de validação cruzada, para garantir a generalização do modelo e evitar o overfitting. O modelo obteve uma acurácia de 85%, o que indica que é capaz de prever a gravidade dos acidentes com alta precisão.
+
+[Link para o código do modelo](https://github.com/saulo-duarte/Projeto-Acidentes-Rodovias-Federais/blob/main/notebooks/Classificacao.ipynb)
 
 ## **Conclusão**
 
