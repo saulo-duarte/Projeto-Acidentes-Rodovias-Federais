@@ -4,54 +4,77 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 import geopandas as gpd
+import joblib
 
-@st.cache_data
-def carregar_dados():
-    df1 = pd.read_csv("Dados_prf_simplificado_parte1.txt", low_memory=False)
-    df2 = pd.read_csv("Dados_prf_simplificado_parte2.txt", low_memory=False)
-    df = pd.concat([df1, df2], ignore_index=True)
-    return df
+# Carragando o modelo
 
-df = carregar_dados()
+model = joblib.load('model/model.pkl')
 
-st.markdown("""
-    <style>
-        .custom-title {
-            font-family: 'Segoe UI Bold', Tahoma, Geneva, Verdana, sans-serif;
-            margin-left: 20px;
-            text-align: center;
-        }
-    </style>
-    <div style='display: flex; align-items: center;'>
-        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Prf_brasao_novo.jpg/738px-Prf_brasao_novo.jpg' width='100'>
-        <h1 class='custom-title'>Acidentes em Rodovias Federais</h1>
-    </div>
-""", unsafe_allow_html=True)
+# Carregando os dados
+
+df = pd.read_csv('data/acidentes.txt')
 
 
-df = carregar_dados()
+st.title('Previsões')
 
-geojson = gpd.read_file("brazil_geo.json")
+st.write("Aqui você pode simular acidentes de trânsito e ver a previsão da classificação do acidente,"
+         " Mostrando a probabilidade do acidente ser com vitimas ilesas, com vitimas feridas e com vitimas fatais")
 
-accidents_per_state = df.groupby('uf').size().reset_index(name='num_accidents')
 
-# Realizar o merge dos dados de acidentes com o GeoDataFrame
-merged_data = geojson.merge(accidents_per_state, how='left', left_on='id', right_on='uf')
 
-fig = px.choropleth(
-    merged_data,
-    geojson=merged_data.set_geometry('geometry'),
-    locations=merged_data.index,
-    color='num_accidents',
-    color_continuous_scale='Darkmint',
-    labels={'num_accidents': 'Número de Acidentes'},
-    hover_name='name',
-    hover_data={'num_accidents': True},
-)
+df.loc[df['causa_acidente'] == 'Ausência de reação do condutor', 'causa_acidente'] = 'Reação tardia ou ineficiente do condutor'
+df.loc[df['causa_acidente'] == 'Ingestão de álcool pelo condutor', 'causa_acidente'] = 'Ingestão de Álcool'
+df.loc[df['causa_acidente'] == 'Demais falhas mecânicas ou elétricas', 'causa_acidente'] = 'Defeito Mecânico no Veículo'
 
-fig.update_geos(fitbounds='locations', visible=False, projection_type='orthographic')
+causa_acidentes = df['causa_acidente'].unique()
+tipos_acidentes = df['tipo_acidente'].unique()
 
-st.title("Mapa de Acidentes no Brasil")
 
-st.plotly_chart(fig, use_container_width=True)
+tipo_veiculos = ['Automóvel', 'Motocicleta', 'Caminhão', 'Camioneta/Caminhonete',
+       'Bicicleta', 'Ônibus', 'Ciclomotor', 'Reboque', 'Pedestre',
+        'Trator'] 
+
+regioes = ['Norte', 'Nordeste', 'Sudeste', 'Sul', 'Centro-Oeste']
+regiao = st.selectbox('Região', regioes)
+
+maiores_br = df['br'].value_counts()[df['br'].value_counts() > 1000].index
+
+df = df[df['br'].isin(maiores_br)]
+
+brs = df['br'].unique()
+brs_filtradas = df[df['regiao'] == regiao]['br'].unique()
+br = st.selectbox('BR', brs_filtradas)
+
+tipo_acidente = st.selectbox('Tipo de Acidente', tipos_acidentes)
+
+causa_acidente = st.selectbox('Causa do Acidente', causa_acidentes)
+
+uso_solo = st.selectbox('Urbano ou Rural', ['Urbano', 'Rural'])
+
+tipo_veiculo = st.selectbox('Tipo de Veículo', tipo_veiculos)
+
+hora = st.selectbox('Hora', range(24))
+
+input_data = pd.DataFrame({
+    'regiao': [regiao],
+    'tipo_acidente': [tipo_acidente],
+    'causa_acidente': [causa_acidente],
+    'uso_solo': [uso_solo],
+    'br': [br],
+    'tipo_veiculo': [tipo_veiculo],
+    'hora': [hora]
+})
+
+label_to_class = {
+    0: 'Com Vítimas Fatais',
+    1: 'Com Vítimas Feridas',
+    2: 'Sem Vítimas'
+}
+
+if st.button('Fazer Previsão'):
+    probabilidades = model.predict_proba(input_data)
+
+    # Exibir as probabilidades para cada classe
+    for i, prob in enumerate(probabilidades[0]):
+        st.write(f"Probabilidade do acidente ser considerado {label_to_class[i]}: {prob * 100:.2f}%")
 
