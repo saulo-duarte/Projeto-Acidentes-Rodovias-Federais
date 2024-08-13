@@ -10,24 +10,12 @@ st.set_page_config(layout="wide")
 
 @st.cache_data
 def load_data():
-    DB_USER = st.secrets.db_credentials.POSTGRES_USER
-    DB_PASSWORD = st.secrets.db_credentials.POSTGRES_PASSWORD
-    DB_HOST = st.secrets.db_credentials.POSTGRES_HOST
-    DB_PORT = st.secrets.db_credentials.POSTGRES_PORT
-    DB_NAME = st.secrets.db_credentials.POSTGRES_DB  
+    df_acidentes = pd.read_csv('data/acidentes.txt')
+    df_envolvidos = pd.read_csv('data/envolvidos.txt')
 
-    connection_str = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-    engine = create_engine(connection_str)
+    df = pd.merge(df_acidentes, df_envolvidos, on='id', how='left')
 
-    query_acidentes = """
-    SELECT * FROM relational.acidentes
-    INNER JOIN relational.envolvidos
-    ON acidentes.id = envolvidos.id_acidente
-    WHERE envolvidos.mortos >= 1;
-    """
-
-    df_acidentes = pd.read_sql(query_acidentes, con=engine)
-    return df_acidentes
+    return df
 
 df = load_data()
 
@@ -41,7 +29,6 @@ st.markdown("""
         }
     </style>
     <div style='display: flex; align-items: center;'>
-        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Prf_brasao_novo.jpg/738px-Prf_brasao_novo.jpg' width='100'>
         <h1 class='custom-title'>Óbitos em Rodovias Federais</h1>
     </div>
 """, unsafe_allow_html=True)
@@ -52,7 +39,7 @@ st.sidebar.markdown("# Filtros - 1")
 df_filtrado = df.copy()
 municipio_selecionado = []
 
-estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["estado"].unique())
+estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["uf"].unique())
 
 regiao_selecionada = st.sidebar.multiselect("Selecione as regiões", df["regiao"].unique())
 
@@ -65,20 +52,20 @@ condicao_tempo_selecionado = st.sidebar.multiselect("Selecione a condição mete
 fase_dia_selecionado = st.sidebar.multiselect("Selecione a fase do dia", df['fase_dia'].unique())
 
 if regiao_selecionada:
-    estados_regiao_selecionada = df[df["regiao"].isin(regiao_selecionada)]["estado"].unique()
+    estados_regiao_selecionada = df[df["regiao"].isin(regiao_selecionada)]["uf"].unique()
     estado_selecionado.extend(estados_regiao_selecionada)
     estado_selecionado = list(set(estado_selecionado))
 
-    municipios_disponiveis = df[df["estado"].isin(estado_selecionado)]["municipio"].unique()
+    municipios_disponiveis = df[df["uf"].isin(estado_selecionado)]["municipio"].unique()
     municipio_selecionado = st.sidebar.multiselect("Selecione o(s) Município(s)", municipios_disponiveis)
 
 
 if estado_selecionado and not regiao_selecionada: 
-    municipios_disponiveis = df[df["estado"].isin(estado_selecionado)]["municipio"].unique()
+    municipios_disponiveis = df[df["uf"].isin(estado_selecionado)]["municipio"].unique()
     municipio_selecionado = st.sidebar.multiselect("Selecione o(s) Município(s)", municipios_disponiveis)
 
 if estado_selecionado:
-    df_filtrado = df_filtrado[df_filtrado["estado"].isin(estado_selecionado)]
+    df_filtrado = df_filtrado[df_filtrado["uf"].isin(estado_selecionado)]
 
 if municipio_selecionado:
     df_filtrado = df_filtrado[df_filtrado["municipio"].isin(municipio_selecionado)]
@@ -390,23 +377,23 @@ st.sidebar.title("Filtros - 2")
 
 
 dt_regiao_selecionada = st.sidebar.multiselect("Selecione as regiões", df["regiao"].unique(), key="regiao")
-dt_estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["estado"].unique(), key="estado")
+dt_estado_selecionado = st.sidebar.multiselect("Selecione os estados", df["uf"].unique(), key="uf")
 dt_veiculo_selecionado = st.sidebar.multiselect("Selecione os tipos de veículos", df['tipo_veiculo'].unique(), key='veiculo')
 dt_condicao_tempo_selecionado = st.sidebar.multiselect("Selecione a condição meteorológica", df["condicao_metereologica"].unique(), key='tempo')
 dt_fase_dia_selecionado = st.sidebar.multiselect("Selecione a fase do dia", df["fase_dia"].unique(), key='fase_dia')
 
 if dt_regiao_selecionada:
-    dt_estado_selecionado.extend(df[df["regiao"].isin(dt_regiao_selecionada)]["estado"].unique())
+    dt_estado_selecionado.extend(df[df["regiao"].isin(dt_regiao_selecionada)]["uf"].unique())
 
 if dt_estado_selecionado:
-    dt_municipios_disponiveis = df[df["estado"].isin(dt_estado_selecionado)]["municipio"].unique()
+    dt_municipios_disponiveis = df[df["uf"].isin(dt_estado_selecionado)]["municipio"].unique()
     dt_municipio_selecionado = st.sidebar.multiselect("Selecione o(s) Município(s)", dt_municipios_disponiveis)
 
     if dt_municipio_selecionado:
         df_filtrado2 = df_filtrado2[df_filtrado2["municipio"].isin(dt_municipio_selecionado)]
 
 if dt_estado_selecionado:
-    df_filtrado2 = df_filtrado2[df_filtrado2["estado"].isin(dt_estado_selecionado)]
+    df_filtrado2 = df_filtrado2[df_filtrado2["uf"].isin(dt_estado_selecionado)]
 
 if dt_condicao_tempo_selecionado:
     df_filtrado2 = df_filtrado2[df_filtrado2["condicao_metereologica"].isin(dt_condicao_tempo_selecionado)]
@@ -423,7 +410,7 @@ geojson = gpd.read_file("brazil_geo.json")
 
 consulta_mapa = """
     SELECT
-        estado AS estado,
+        uf AS estado,
         COUNT(DISTINCT id) AS num_accidents
         FROM df_filtrado2
         GROUP BY estado;
@@ -485,7 +472,7 @@ with col7:
 
 consulta6 = """
     SELECT 
-        estado AS Estado,
+        uf AS Estado,
         COUNT(DISTINCT id) AS Total_Acidentes
         FROM df_filtrado2
         GROUP BY Estado

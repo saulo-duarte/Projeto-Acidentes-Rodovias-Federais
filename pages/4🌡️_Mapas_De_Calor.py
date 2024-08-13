@@ -8,29 +8,18 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 from sqlalchemy import create_engine
+import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
 @st.cache_data
 def load_data():
-    DB_USER = st.secrets.db_credentials.POSTGRES_USER
-    DB_PASSWORD = st.secrets.db_credentials.POSTGRES_PASSWORD
-    DB_HOST = st.secrets.db_credentials.POSTGRES_HOST
-    DB_PORT = st.secrets.db_credentials.POSTGRES_PORT
-    DB_NAME = st.secrets.db_credentials.POSTGRES_DB 
+    df_acidentes = pd.read_csv('data/acidentes.txt')
+    df_envolvidos = pd.read_csv('data/envolvidos.txt')
 
-    connection_str = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-    engine = create_engine(connection_str)
+    df = pd.merge(df_acidentes, df_envolvidos, on='id', how='left')
 
-    query_acidentes = """
-    SELECT * 
-    FROM relational.acidentes
-    INNER JOIN relational.envolvidos
-    ON acidentes.id = envolvidos.id_acidente
-    """
-
-    df_acidentes = pd.read_sql(query_acidentes, con=engine)
-    return df_acidentes
+    return df
 
 df = load_data()
 
@@ -43,7 +32,6 @@ st.markdown("""
         }
     </style>
     <div style='display: flex; align-items: center;'>
-        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Prf_brasao_novo.jpg/738px-Prf_brasao_novo.jpg' width='100'>
         <h1 class='custom-title'>Mapas de Calor - Acidentes em Rodovias Federais</h1>
     </div>
 """, unsafe_allow_html=True)
@@ -108,12 +96,6 @@ st.markdown(f'<div style="{square_style}"> \
              <div style="border: 3.5px solid #ff2436; border-radius: 15px; padding: 15px; background-color: #fc4c00; height: 100%;"> \
              <h3 style="color:yellow; font-family: Segoe UI Semibold; font-size: 25px;">Total Acidentes</h3> \
              <h2 style="color:white; margin: 5px 0; font-size: 28px">{total_acidentes}</h2> \
-             </div> \
-             </div> \
-             <div style="display: inline-block; text-align: center; height: 100%; vertical-align: top;"> \
-             <div style="border: 3.5px solid #ff2436; border-radius: 15px; padding: 15px; background-color: #fc4c00; height: 100%;"> \
-             <h3 style="color:yellow; font-family: Segoe UI Semibold; font-size: 25px;">Acidentes c/ Vítimas</h3> \
-             <h2 style="color:white; margin: 5px 0; font-size: 28px">{total_acidentes_com_vitimas}</h2> \
              </div> \
              </div> \
              <div style="display: inline-block; text-align: center; height: 100%; vertical-align: top;"> \

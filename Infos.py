@@ -11,7 +11,6 @@ st.markdown("""
         }
     </style>
     <div style='display: flex; align-items: center;'>
-        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Prf_brasao_novo.jpg/738px-Prf_brasao_novo.jpg' width='100'>
         <h1 class='custom-title'>Acidentes em Rodovias Federais</h1>
     </div>
 """, unsafe_allow_html=True)
@@ -28,18 +27,18 @@ st.markdown("""
 
     ## Desenvolvimento
 
-    O processo de análise de dados envolve várias etapas. Primeiramente, os dados são coletados do site do governo e carregados na aplicação. Em seguida, eles são pré-processados e explorados utilizando as bibliotecas Pandas e NumPy. Durante essa fase, realizei tarefas como limpeza de dados, manipulação de formatos e tratamento de valores ausentes.
+    O processo de análise de dados envolve várias etapas. Primeiramente, os dados são coletados do site do governo e carregados, em seguida, são limpos e importados para um banco de dados PostgeSQL utilizando uma imagem Docker. Após a importação dos dados, são realizadas análises exploratórias e visualizações de dados para identificar padrões e tendências. 
+    Por fim, os insights obtidos são apresentados de forma clara e concisa, utilizando gráficos interativos e filtros personalizados para facilitar a interpretação dos dados, além da criação de um modelo de Machine Learning para prever a gravidade dos acidentes.
+    """ , unsafe_allow_html=True)
 
-    Após o pré-processamento, os dados são visualizados através de gráficos interativos utilizando a biblioteca Plotly. Essas visualizações ajudam a identificar padrões, tendências e correlações nos dados, fornecendo insights valiosos para tomadas de decisão.
-
-    Também utilizei o PowerBI para realizar visualizações após o tratamento do dados, disponível em [Link](https://app.powerbi.com/view?r=eyJrIjoiM2Y0MDY3NmQtZjNiOC00YWNhLWE2NzUtOGM3NGY0ZGIyOGFjIiwidCI6ImRmODY3OWNkLWE4MGUtNDVkOC05OWFjLWM4M2VkN2ZmOTVhMCJ9&pageName=ReportSection8edd04b2e68794eb13ed).
-
+st.image("images/Diagrama_Projeto.png")
     ## Funcionalidades Adicionais
-
-    
+st.markdown("""
+    ## Funcionalidades Adicionais
     Além das análises e visualizações de dados, a aplicação oferece funcionalidades adicionais na barra lateral, como a navegação entre as páginas e filtros interativos. Esses filtros permitem que os usuários personalizem a visualização dos dados de acordo com suas necessidades específicas, proporcionando uma experiência de análise personalizada e profunda. Além disso, os gráficos gerados pelo Plotly oferecem recursos avançados, como a possibilidade de utilizar o zoom nos gráficos ou até mesmo deixá-los em tela cheia, permitindo uma análise mais detalhada e imersiva.
 
     Para conhecer mais sobre mim e minha experiência em análise de dados, confira meu perfil no [LinkedIn](https://www.linkedin.com/in/saulo-duarte-0a2720261/)
+    Meu github: [GitHub](https://github.com/saulo-duarte) & Meu Portfólio: [Portfólio](https://sauloduarte.carrd.co/#)
     """,
     unsafe_allow_html=True
 )
